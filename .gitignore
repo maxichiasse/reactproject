@@ -1,0 +1,63 @@
+# ==============================
+# 📦 DÉPENDANCES NODE
+# ==============================
+# Ignore tous les node_modules (frontend + backend)
+**/node_modules/
+
+# ==============================
+# 🧾 LOGS
+# ==============================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==============================
+# 🔒 ENVIRONNEMENT & SECRETS
+# ==============================
+# Fichiers d'environnement (ne jamais commit)
+.env
+.env.*         # ex: .env.local, .env.development
+*.local
+
+# ==============================
+# 🏗️ FICHIERS DE BUILD / SORTIES
+# ==============================
+# Vite / TypeScript / Node / etc.
+**/dist/
+**/build/
+**/.tsbuildinfo
+
+# ==============================
+# 🧰 ÉDITEURS ET FICHIERS LOCAUX
+# ==============================
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+
+# JetBrains / WebStorm
+.idea/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==============================
+# ⚙️ TESTS / COUVERTURE
+# ==============================
+coverage/
+*.lcov
+
+# ==============================
+# 🔧 AUTRES OUTILS
+# ==============================
+# Cache ESLint
+.eslintcache
