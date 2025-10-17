@@ -4,7 +4,7 @@ import { Group } from "./Group";
 import { Project } from "./Project";
 
 @Entity("students")
-@Index(["project", "githubId"], { unique: true }) // Un étudiant (githubId) ne peut s'inscrire qu'une fois par projet
+@Index(["project", "githubId"], { unique: true })
 export class Student {
     @PrimaryGeneratedColumn()
     id!: number;
@@ -19,7 +19,7 @@ export class Student {
     githubAvatar!: string;
 
     @ManyToOne(() => Project, { onDelete: "CASCADE" })
-    project!: Project; // ✅ rattache l’étudiant au projet directement
+    project!: Project;
 
     @ManyToOne(() => Group, (group) => group.students, { onDelete: "CASCADE" })
     group!: Group;

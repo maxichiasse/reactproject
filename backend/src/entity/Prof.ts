@@ -3,10 +3,10 @@ import { Entity, PrimaryColumn, Column, OneToMany } from "typeorm";
 import { Organization } from "./Organization";
 import { Project } from "./Project";
 
-@Entity("profs") // table en DB s’appellera "profs"
+@Entity("profs")
 export class Prof {
     @PrimaryColumn()
-    id!: number; // GitHub ID du prof
+    id!: number;
 
     @Column({ nullable: true })
     login!: string;
@@ -18,7 +18,7 @@ export class Prof {
     avatar_url!: string;
 
     @Column({ nullable: true })
-    encryptedToken!: string; // Token chiffré
+    encryptedToken!: string;
 
     // Inverse de Organization.owner
     @OneToMany(() => Organization, (org) => org.owner)

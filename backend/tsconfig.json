@@ -10,7 +10,7 @@
 "forceConsistentCasingInFileNames": true,
 "experimentalDecorators": true,
 "emitDecoratorMetadata": true,
-"useDefineForClassFields": false     // 👈 AJOUT OBLIGATOIRE
+"useDefineForClassFields": false
 
 },
 "include": ["src/backend/**/*"]

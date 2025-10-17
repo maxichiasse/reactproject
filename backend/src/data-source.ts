@@ -16,7 +16,7 @@ export const AppDataSource = new DataSource({
     database: "githelper",
     synchronize: true,          // OK en dev
     //dropSchema: true,         // (optionnel) pour repartir de zéro en dev
-    logging: true,
+    logging: ["error", "warn"],
     entities: [Prof, Organization, Project, Group, Student],
     migrations: [],
     subscribers: [],

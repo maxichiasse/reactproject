@@ -1,12 +1,17 @@
 //backend/src/config/env.ts
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 dotenv.config();
 
+function required(name: string): string {
+    const value = process.env[name];
+    if (!value) throw new Error(`❌ Variable d'environnement manquante : ${name}`);
+    return value;
+}
+
 export const ENV = {
-    CLIENT_ID: process.env.CLIENT_ID!,
-    CLIENT_SECRET: process.env.CLIENT_SECRET!,
-    JWT_SECRET: process.env.JWT_SECRET!,
-    ENCRYPTION_KEY: process.env.ENCRYPTION_KEY!,
-    //ALLOWED_PROFS: process.env.ALLOWED_PROFS?.split(",").map((x) => x.trim()) || [],
-    FRONT_URL: "http://localhost:5173",
+    CLIENT_ID: required("CLIENT_ID"),
+    CLIENT_SECRET: required("CLIENT_SECRET"),
+    JWT_SECRET: required("JWT_SECRET"),
+    ENCRYPTION_KEY: required("ENCRYPTION_KEY"),
+    FRONT_URL: process.env.FRONT_URL || "http://localhost:5173",
 };

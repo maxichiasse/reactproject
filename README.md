@@ -20,3 +20,7 @@ Une fois que le prof vous transmet son token, ajoutez-le en base avec la command
 
 ```bash
    npm run add-prof ghp_Token
+```
+
+Ajouter plus tard comment lancer le serveur et le front
+(1 ou 2 commandes?)

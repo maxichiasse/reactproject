@@ -9,13 +9,13 @@ export class Organization {
     id!: number;
 
     @Column()
-    name!: string; // nom de l'organisation GitHub
+    name!: string;
 
     @Column({ nullable: true })
     avatar_url!: string;
 
     @Column({ default: 0 })
-    public_repos!: number; // ✅ nombre de repos GitHub
+    public_repos!: number;
 
     @Column()
     ownerId!: number;

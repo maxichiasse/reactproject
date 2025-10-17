@@ -10,10 +10,10 @@ export class Project {
     id!: number;
 
     @Column()
-    name!: string; // Même nom que l'orga
+    name!: string;
 
     @Column()
-    secretKey!: string; // clé partagée avec les étudiants
+    secretKey!: string;
 
     @Column()
     minStudents!: number;
@@ -25,7 +25,7 @@ export class Project {
     maxGroups!: number;
 
     @Column({ default: false })
-    locked!: boolean; // Si true, plus possible de créer des groupes
+    locked!: boolean;
 
 
     @ManyToOne(() => Organization, (org) => org.projects, { onDelete: "CASCADE" })

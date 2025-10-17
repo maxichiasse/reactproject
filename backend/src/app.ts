@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import morgan from "morgan";
 
 import { errorMiddleware } from "./middleware/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
@@ -25,10 +26,12 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
+
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
 }));
+app.use(morgan("dev"));
 
 // === Routes API ===
 app.use("/api", authRoutes);

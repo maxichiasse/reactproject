@@ -4,13 +4,13 @@ import { Project } from "./Project";
 import { Student } from "./Student";
 
 @Entity("groups")
-@Index (["project", "name"], { unique: true }) // Unicité du nom dans un projet
+@Index (["project", "name"], { unique: true })
 export class Group {
     @PrimaryGeneratedColumn()
     id!: number;
 
     @Column()
-    name!: string; // ex: "Groupe01"
+    name!: string;
 
     @ManyToOne(() => Project, (project) => project.groups, { onDelete: "CASCADE" })
     project!: Project;
