@@ -1,4 +1,4 @@
-// backend/src/controllers/authController.ts
+//backend/src/controllers/authController.ts
 import type { Request, Response } from "express";
 import { handleGithubAuth } from "../services/authService";
 import { AuthRequest } from "../middleware/authMiddleware";

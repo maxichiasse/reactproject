@@ -10,7 +10,6 @@ import { errorMiddleware } from "./middleware/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
 import orgRoutes from "./routes/organizationRoutes";
 import projectRoutes from "./routes/projectRoutes";
-import testGithubRoutes from "./routes/testGithubRoutes";
 import githubSearchRoutes from "./routes/githubSearchRoutes";
 import githubAuthStudentRoutes from "./routes/githubAuthStudentRoutes";
 import GroupRoutes from "./routes/groupRoutes";

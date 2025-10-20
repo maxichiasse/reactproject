@@ -1,3 +1,4 @@
+//backend/src/controllers/githubAuthStudentController.ts
 import type { Request, Response } from "express";
 import { ENV } from "../config/env";
 
