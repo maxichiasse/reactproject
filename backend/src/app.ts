@@ -35,7 +35,6 @@ app.use(morgan("dev"));
 // === Routes API ===
 app.use("/api", authRoutes);
 app.use("/api", orgRoutes);
-app.use("/api", testGithubRoutes);
 app.use("/api", githubSearchRoutes);
 app.use("/api", githubAuthStudentRoutes);
 app.use("/api", GroupRoutes);

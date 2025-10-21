@@ -5,6 +5,7 @@ import { Project } from "../entity/Project";
 import { Student } from "../entity/Student";
 import { Group } from "../entity/Group";
 import { createRepoAndInviteStudents } from "../services/githubRepoService";
+import {handleGithubError} from "../utils/errorHandler";
 
 /**
  * ➕ Crée un groupe d'étudiants et un repo GitHub pour un projet
@@ -75,7 +76,6 @@ export const createGroup = async (req: Request, res: Response) => {
             });
         }
     } catch (err: any) {
-        console.error("Erreur création groupe:", err);
-        res.status(500).json({ error: err.message });
+        return handleGithubError(res, err);
     }
 };

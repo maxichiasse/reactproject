@@ -1,6 +1,7 @@
 //backend/src/controllers/githubAuthStudentController.ts
 import type { Request, Response } from "express";
 import { ENV } from "../config/env";
+import {handleGithubError} from "../utils/errorHandler";
 
 export const githubAuthStudent = async (req: Request, res: Response) => {
     const { projectId } = req.params;
@@ -52,7 +53,6 @@ export const githubAuthStudent = async (req: Request, res: Response) => {
             projectId, // utile pour savoir à quel projet rattacher
         });
     } catch (err: any) {
-        console.error("Erreur /projects/:projectId/student:", err.message);
-        res.status(500).json({ error: err.message });
+        return handleGithubError(res, err);
     }
 };

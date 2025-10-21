@@ -1,6 +1,7 @@
 //backend/src/controllers/githubSearchController.ts
 import type { Request, Response } from "express";
 import { githubRequest } from "../services/githubService";
+import {handleGithubError} from "../utils/errorHandler";
 
 /**
  * 🔍 Recherche d’utilisateurs GitHub à partir du token du prof
@@ -30,7 +31,6 @@ export const searchGithubUsers = async (req: Request, res: Response) => {
 
         res.json(results);
     } catch (err: any) {
-        console.error("Erreur recherche GitHub:", err.message);
-        res.status(500).json({ error: err.message });
+        return handleGithubError(res, err);
     }
 };

@@ -8,6 +8,7 @@ import { Prof } from "../entity/Prof";
 import { Organization } from "../entity/Organization";
 import { decrypt } from "../utils/crypto";
 import { githubFetch } from "../utils/github";
+import {handleGithubError} from "../utils/errorHandler";
 
 interface CustomJwtPayload extends jwt.JwtPayload {
     id: number;
@@ -25,8 +26,7 @@ export const getOrganizations = async (req: Request, res: Response) => {
         const orgs = await syncOrganizations(decoded.id);
         res.json(orgs);
     } catch (err: any) {
-        console.error("Erreur /organizations:", err);
-        res.status(500).json({ error: err.message });
+        return handleGithubError(res, err);
     }
 };
 
@@ -66,7 +66,6 @@ export const getOrganizationRepos = async (req: Request, res: Response) => {
 
         res.json(repos);
     } catch (err: any) {
-        console.error("Erreur /organizations/:orgName/repos:", err.message);
-        res.status(500).json({ error: err.message });
+        return handleGithubError(res, err);
     }
 };

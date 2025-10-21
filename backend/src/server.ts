@@ -1,6 +1,6 @@
 //backend/src/server.ts
 import "reflect-metadata";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import { AppDataSource } from "./data-source";
 import { app } from "./app";
 
