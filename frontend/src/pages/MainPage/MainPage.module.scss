@@ -1,0 +1,28 @@
+//frontend/src/pages/MainPage.module.scss
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.container {
+  min-height: calc(100vh - 120px);
+  @include flex-center(column);
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: $space-l;
+  color: $color-primary;
+}
+
+.buttons {
+  display: flex;
+  gap: $space-m;
+
+  .btnLogin {
+    @include button-base($color-primary, $color-accent);
+  }
+
+  .btnProjects {
+    @include button-base($color-muted, darken($color-muted, 10%));
+  }
+}

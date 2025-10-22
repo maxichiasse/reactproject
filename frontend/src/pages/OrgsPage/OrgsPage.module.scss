@@ -1,0 +1,100 @@
+/* frontend/src/pages/OrgsPage/OrgsPage.module.scss */
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.container {
+  width: 100%;
+  padding: $space-l $space-m;
+  display: flex;
+  flex-direction: column;
+  gap: $space-l;
+}
+
+.topBar {
+  @include flex-center(row, space-between);
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0 $space-l;
+
+  .userInfo {
+    @include flex-center(row);
+    gap: 1rem;
+
+    .greeting { font-size: 1.5rem; font-weight: 500; }
+    .avatar { width: 50px; height: 50px; border-radius: 50%; }
+  }
+
+  .logoutButton {
+    @include button-base($color-muted, darken($color-muted, 10%));
+    font-size: 0.9rem;
+    padding: 0.5rem 1.2rem;
+    margin-right: $space-s;
+  }
+}
+
+.orgSection {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+
+  .orgTitle {
+    font-size: 1.2rem;
+    margin-bottom: $space-m;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .orgList {
+    display: flex;
+    flex-direction: column;
+    gap: $space-m;
+    list-style: none;
+    padding: 0;
+
+    .orgCard {
+      @include card(1rem);
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+
+      &:hover { transform: translateY(-2px); background-color: #f3f3f3; }
+
+      .orgAvatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 1rem; }
+      .orgInfo { display: flex; flex-direction: column; gap: 4px; }
+      .orgName { font-weight: 600; font-size: 16px; }
+      .repoCount { font-size: 13px; color: $text-light; }
+
+      .addButton, .editButton {
+        position: absolute;
+        right: 1rem;
+        @include button-base($color-muted, darken($color-muted, 10%));
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        padding: 0;
+      }
+
+      .createLabel, .editLabel {
+        position: absolute;
+        right: 1rem;
+        bottom: 100%;
+        margin-bottom: 6px;
+        background-color: $color-muted;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        display: none;
+      }
+
+      .addButton:hover + .createLabel,
+      .editButton:hover + .editLabel {
+        display: block;
+      }
+    }
+  }
+}

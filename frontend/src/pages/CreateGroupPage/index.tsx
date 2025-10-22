@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@hooks/useToast";
 import { projectsAPI } from "@api/projects";
-import styles from "./CreateGroup.module.css";
+import styles from "./CreateGroup.module.scss";
 
 const CLIENT_ID = "Ov23lidkKtTsD46iYG6F";
 

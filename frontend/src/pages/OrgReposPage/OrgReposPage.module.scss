@@ -1,0 +1,64 @@
+/* frontend/src/pages/OrgReposPage/OrgReposPage.module.scss */
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.pageWrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: $space-l auto;
+  padding: $space-m;
+  @include flex-center(column);
+  position: relative;
+
+  .backButton {
+    position: absolute;
+    top: $space-m;
+    left: $space-m;
+    @include button-base($color-muted, darken($color-muted, 10%));
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+  }
+
+  .projectCard {
+    @include card(1.5rem);
+    margin: $space-l 0;
+    width: 60%;
+    font-size: 0.95rem;
+    text-align: left;
+
+    h2 { margin: 0 0 $space-s; }
+  }
+
+  .repoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: $space-m;
+
+    .repoBox {
+      @include card(1rem);
+      width: 180px;
+      height: 120px;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: $color-accent;
+      }
+
+      p {
+        font-size: 0.85rem;
+        color: $text-light;
+        margin-top: $space-s;
+      }
+    }
+  }
+}

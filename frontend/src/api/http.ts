@@ -35,7 +35,10 @@ api.interceptors.response.use(
 
         if (status === 401) {
             console.warn("🔒 Non authentifié (401)");
-            if (currentPath !== "/" && !currentPath.startsWith("/callback")) {
+            // ❌ Ne redirige PAS sur les routes publiques (comme /CreateGroup)
+            const publicPaths = ["/", "/callback"];
+            const isCreateGroup = currentPath.startsWith("/CreateGroup");
+            if (!publicPaths.includes(currentPath) && !isCreateGroup) {
                 window.location.href = "/";
             }
         }

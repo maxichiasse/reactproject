@@ -5,7 +5,7 @@ import { authAPI } from "@api/auth";
 import { orgsAPI } from "@api/orgs";
 import type { User } from "types/User";
 import type { Organization } from "types/Organization";
-import styles from './OrgsPage.module.css';
+import styles from './OrgsPage.module.scss';
 
 const handleLogout = async () => {
     await authAPI.logout();

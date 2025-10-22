@@ -1,0 +1,78 @@
+//frontend/src/styles/_global.scss
+@use "variables" as *;
+@use "mixins" as *;
+
+/* === RESET GLOBAL === */
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: $font-main;
+  background-color: $background-light;
+  color: $text-color;
+}
+
+/* === HEADER === */
+.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background-color: $color-primary;
+  color: $color-white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+
+  @include flex-center(row);
+  justify-content: space-between;
+  padding: 0 2rem;
+
+  /* Logo + Titre */
+  .header-logo-link {
+    @include flex-center(row);
+    gap: $space-s;
+    color: $color-white;
+    text-decoration: none;
+
+    .header-title {
+      color: $color-white;
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .header-logo {
+      height: 40px;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+/* === FOOTER === */
+.global-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: $color-primary;
+  color: $color-white;
+  font-size: 0.9rem;
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.05);
+
+  @include flex-center(row);
+  text-align: center;
+}
+
+/* === CONTENU PRINCIPAL === */
+.main-content {
+  padding-top: 80px;  // espace sous le header
+  padding-bottom: 40px; // espace au-dessus du footer
+  min-height: 100vh;
+}

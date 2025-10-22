@@ -5,7 +5,7 @@ import { projectsAPI } from "@api/projects";
 import { orgsAPI } from "@api/orgs";
 import type { Project } from "types/Project";
 import type { Repository } from "types/Repository";
-import styles from "./OrgReposPage.module.css";
+import styles from "./OrgReposPage.module.scss";
 
 const OrgReposPage = () => {
     const { orgName } = useParams<{ orgName: string }>();

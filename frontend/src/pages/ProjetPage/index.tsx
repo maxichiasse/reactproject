@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { projectsAPI } from "@api/projects";
 import { useToast } from "@hooks/useToast";
-import styles from "./ProjetPage.module.css";
+import styles from "./ProjetPage.module.scss";
 import type { AxiosError } from "axios";
 
 const ProjetPage = () => {

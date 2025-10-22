@@ -1,6 +1,6 @@
 //frontend/src/components/Toast.tsx
 import React, { useEffect } from "react";
-import "@styles/toast.css";
+import "@styles/_toast.scss";
 
 interface ToastProps {
     message: string;

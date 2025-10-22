@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authAPI } from "@api/auth.ts";
-import styles from './CallbackPage.module.css';
+import styles from './CallbackPage.module.scss';
 
 const CallbackPage = () => {
     const [searchParams] = useSearchParams();

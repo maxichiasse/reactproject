@@ -1,0 +1,60 @@
+/* frontend/src/pages/ProjetPage/ProjetPage.module.scss */
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.pageWrapper {
+  position: relative;
+  min-height: 90vh;
+  @include flex-center(column);
+  background-color: #f5f6f8;
+}
+
+.container {
+  @include card(2rem);
+  max-width: 600px;
+  width: 100%;
+  margin: $space-l auto;
+
+  h1 {
+    margin-bottom: $space-l;
+    text-align: center;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-m;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+
+      input {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-top: 0.5rem;
+
+        &.readonlyInput {
+          background-color: #f0f0f0;
+          color: $text-light;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .submitButton {
+      @include button-base($color-primary, $color-accent);
+      margin-top: $space-m;
+    }
+
+    .backButton {
+      @include button-base($color-muted, darken($color-muted, 10%));
+      align-self: flex-start;
+      font-size: 0.9rem;
+      padding: 0.4rem 1rem;
+      margin-bottom: $space-m;
+    }
+  }
+}

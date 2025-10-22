@@ -9,8 +9,7 @@ import OrgReposPage from "@pages/OrgReposPage";
 import ProjetPage from "@pages/ProjetPage";
 import CreateGroupPage from "@pages/CreateGroupPage";
 
-import "@styles/styles.css";
-import "@styles/app.css";
+import "@styles/main.scss";
 
 function App() {
     return (

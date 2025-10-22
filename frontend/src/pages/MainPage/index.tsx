@@ -1,5 +1,5 @@
 //frontend/src/pages/MainPage/index.tsx
-import styles from './MainPage.module.css';
+import styles from './MainPage.module.scss';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authAPI } from "@api/auth";
 import { useToast } from "@hooks/useToast"
