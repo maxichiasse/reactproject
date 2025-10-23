@@ -9,6 +9,23 @@
   background-color: #f5f6f8;
 }
 
+.backButton {
+  @include button-base($color-muted, darken($color-muted, 10%));
+  font-size: 0.9rem;
+  padding: 0.4rem 1rem;
+  margin-bottom: $space-l;
+  align-self: flex-start;
+  margin-left: $space-xl;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
 .container {
   @include card(2rem);
   max-width: 600px;
@@ -49,12 +66,5 @@
       margin-top: $space-m;
     }
 
-    .backButton {
-      @include button-base($color-muted, darken($color-muted, 10%));
-      align-self: flex-start;
-      font-size: 0.9rem;
-      padding: 0.4rem 1rem;
-      margin-bottom: $space-m;
-    }
   }
 }

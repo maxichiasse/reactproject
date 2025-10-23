@@ -2,8 +2,8 @@
 "compilerOptions": {
 "target": "ES2020",
 "module": "CommonJS",
-"rootDir": "src/backend",
-"outDir": "dist/backend",
+"rootDir": "src",
+"outDir": "dist",
 "strict": true,
 "esModuleInterop": true,
 "skipLibCheck": true,
@@ -13,5 +13,5 @@
 "useDefineForClassFields": false
 
 },
-"include": ["src/backend/**/*"]
+"include": ["src/**/*"]
 }

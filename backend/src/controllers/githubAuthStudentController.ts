@@ -30,7 +30,7 @@ export const githubAuthStudent = async (req: Request, res: Response) => {
             },
             body: new URLSearchParams({
                 client_id: ENV.CLIENT_ID,
-                client_secret: ENV.CLIENT_SECRET,
+                client_secret: ENV.GITHUB_APP_CLIENT_SECRET,
                 code,
                 redirect_uri: ENV.FRONT_URL + "/callback",
             }),

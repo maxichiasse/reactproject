@@ -4,11 +4,18 @@
 
 .container {
   width: 100%;
-  padding: $space-l $space-m;
+  padding: calc($space-s + 10px) $space-m calc($space-s + 40px); // ✅ espace sous header + au-dessus footer
   display: flex;
   flex-direction: column;
   gap: $space-l;
+
+  /* ✅ Scroll vertical uniquement si nécessaire */
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 120px); // 80px header + 40px footer
+  box-sizing: border-box; // ✅ évite que le padding crée un dépassement
 }
+
 
 .topBar {
   @include flex-center(row, space-between);

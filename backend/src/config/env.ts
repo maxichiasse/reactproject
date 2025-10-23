@@ -14,4 +14,12 @@ export const ENV = {
     JWT_SECRET: required("JWT_SECRET"),
     ENCRYPTION_KEY: required("ENCRYPTION_KEY"),
     FRONT_URL: process.env.FRONT_URL || "http://localhost:5173",
+
+    GITHUB_APP_ID: required("GITHUB_APP_ID"),
+    GITHUB_APP_PRIVATE_KEY: required("GITHUB_APP_PRIVATE_KEY"),
+    GITHUB_APP_CLIENT_ID: required("GITHUB_APP_CLIENT_ID"),
+    GITHUB_APP_CLIENT_SECRET: required("GITHUB_APP_CLIENT_SECRET"),
 };
+
+
+

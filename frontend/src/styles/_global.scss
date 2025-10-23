@@ -75,4 +75,6 @@ body, html, #root {
   padding-top: 80px;  // espace sous le header
   padding-bottom: 40px; // espace au-dessus du footer
   min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }

@@ -5,7 +5,7 @@ import { authAPI } from "@api/auth";
 import { useToast } from "@hooks/useToast"
 import { useEffect } from "react";
 
-const CLIENT_ID = 'Ov23lidkKtTsD46iYG6F';
+const CLIENT_ID = 'Ov23lixpheHioggiyoet';
 
 const MainPage = () => {
     const [searchParams] = useSearchParams();

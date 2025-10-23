@@ -8,9 +8,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "ts-node -P tsconfig.json src/server.ts",
-    "dev:backend": "ts-node --project tsconfig.json backend/src/server.ts",
+    "dev:backend": "ts-node --project tsconfig.json src/server.ts",
     "build:backend": "tsc --project tsconfig.json",
-    "start:backend": "node dist/backend/src/server.ts",
+    "start:backend": "node dist/server.js",
     "add-prof": "ts-node -P tsconfig.json backend/src/scripts/add-prof.ts"
   },
   "dependencies": {
