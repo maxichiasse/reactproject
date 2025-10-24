@@ -16,7 +16,7 @@ import GroupRoutes from "./routes/groupRoutes";
 
 
 export const app = express();
-
+app.set("trust proxy", 1);
 // === Sécurité & middlewares globaux ===
 app.use(cors({
     origin: "http://localhost:5173",

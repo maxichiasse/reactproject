@@ -12,10 +12,11 @@ export const githubAuth = async (req: Request, res: Response) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            secure: true,         // Railway est HTTPS
+            sameSite: "none",     // pour autoriser l’envoi du cookie entre front/back
             maxAge: 2 * 60 * 60 * 1000,
         });
+
 
         res.status(200).json({ success: true });
     } catch (err: any) {

@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
     port: Number(process.env.MYSQLPORT) || 1220,
     username: process.env.MYSQLUSER || "maximutd",
     password: process.env.MYSQLPASSWORD || "wBjs1AWCXDVGArjb6wxX",
-    database: process.env.MYSQLDATABASE || "githelper",
+    database: process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || "githelper",
     synchronize: true, // garde true uniquement en dev !
     logging: ["error", "warn"],
     entities: [Prof, Organization, Project, Group, Student],

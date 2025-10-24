@@ -129,8 +129,7 @@ export async function handleGithubAuth(code: string) {
     const token = jwt.sign(
         { id: prof.id, login: prof.login, avatar_url: prof.avatar_url, name: prof.name },
         ENV.JWT_SECRET,
-        { expiresIn: "2h" }
-    );
+        { expiresIn: "2h", algorithm: "HS256" }    );
 
     return token;
 }

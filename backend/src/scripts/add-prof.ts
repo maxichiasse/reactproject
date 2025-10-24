@@ -52,7 +52,7 @@ AppDataSource.initialize().then(async () => {
 
         // 3. Insertion ou mise à jour en base de données
         const profRepo = AppDataSource.getRepository(Prof);
-        const existing = await profRepo.findOneBy({ id });
+        const existing = await profRepo.findOneBy({ login });
 
         if (existing) {
             console.log(`♻️ Mise à jour du prof ${login}...`);
