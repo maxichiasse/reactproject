@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import { configureSecurity} from "./config/security";
 
 import { errorMiddleware } from "./middleware/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
@@ -24,7 +25,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(helmet());
+configureSecurity(app);
 
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000,

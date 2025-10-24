@@ -15,10 +15,14 @@ export function generateAppJWT(): string {
         exp: now + 9 * 60, // 9 minutes
         iss: ENV.GITHUB_APP_ID, // identifiant de l'app GitHub
     };
+    console.log("🔑 GITHUB_APP_PRIVATE_KEY (preview):", ENV.GITHUB_APP_PRIVATE_KEY.slice(0, 50));
 
-    return jwt.sign(payload, ENV.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, "\n"), {
-        algorithm: "RS256",
-    });
+    return jwt.sign(
+        payload,
+        ENV.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, ''),
+        { algorithm: 'RS256' }
+    );
+
 }
 
 /**
