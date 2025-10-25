@@ -1,11 +1,10 @@
-//frontend/src/pages/MainPage/index.tsx
+// frontend/src/pages/MainPage/index.tsx
 import styles from './MainPage.module.scss';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authAPI } from "@api/auth";
-import { useToast } from "@hooks/useToast"
+import { useToast } from "@hooks/useToast";
 import { useEffect } from "react";
-
-const CLIENT_ID = 'Ov23lixpheHioggiyoet';
+import { ENV } from "@config/env";
 
 const MainPage = () => {
     const [searchParams] = useSearchParams();
@@ -15,7 +14,14 @@ const MainPage = () => {
 
     /** 🔁 Redirige vers la page d’autorisation GitHub */
     const redirectToGitHub = () => {
-        const url = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&scope=read:user%20read:org%20repo&prompt=consent`;
+        const redirectUri = encodeURIComponent(`${ENV.FRONT_URL}/callback`);
+        const url = `https://github.com/login/oauth/authorize` +
+            `?client_id=${ENV.GITHUB_CLIENT_ID}` +
+            `&scope=read:user%20read:org%20repo` +
+            `&redirect_uri=${redirectUri}` +
+            `&prompt=consent`;
+        console.log("🔑 CLIENT_ID:", ENV.GITHUB_CLIENT_ID);
+        console.log("↩️ Redirect URI:", redirectUri);
         window.location.href = url;
     };
 
@@ -35,7 +41,6 @@ const MainPage = () => {
             redirectToGitHub();
         }
     };
-
 
     useEffect(() => {
         if (error === "forbidden")
@@ -59,7 +64,6 @@ const MainPage = () => {
                 </button>
             </div>
 
-            {/* 🧱 Zone d'affichage des toasts */}
             <ToastContainer />
         </div>
     );

@@ -23,6 +23,7 @@
       "@api/*": ["api/*"],
       "@assets/*": ["assets/*"],
       "@components/*": ["components/*"],
+      "@config/*": ["config/*"],
       "@contexts/*": ["contexts/*"],
       "@hooks/*": ["hooks/*"],
       "@pages/*": ["pages/*"],

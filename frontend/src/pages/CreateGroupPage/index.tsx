@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useToast } from "@hooks/useToast";
 import { projectsAPI } from "@api/projects";
 import styles from "./CreateGroup.module.scss";
+import {ENV} from "@config/env";
 
-const CLIENT_ID = "Ov23lidkKtTsD46iYG6F";
 
 interface Student {
     id: number;
@@ -97,11 +97,11 @@ const CreateGroupPage = () => {
 
     // 🔐 Autoriser via OAuth GitHub
     const handleAuthorize = () => {
-        const redirectUri = encodeURIComponent("http://localhost:5173/callback");
+        const redirectUri = encodeURIComponent(`${ENV.FRONT_URL}/callback`);
         const state = encodeURIComponent(`createGroup|${projectId}|${key}`);
         window.location.href =
             `https://github.com/login/oauth/authorize` +
-            `?client_id=${CLIENT_ID}` +
+            `?client_id=${ENV.GITHUB_CLIENT_ID}` +
             `&scope=read:user` +
             `&redirect_uri=${redirectUri}` +
             `&state=${state}`;

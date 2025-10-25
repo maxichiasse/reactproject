@@ -22,6 +22,8 @@ export const githubAuthStudent = async (req: Request, res: Response) => {
         const { code, projectId } = parsed.data;
 
         // 1️⃣ Échange du code OAuth contre un access_token
+        const redirectUri = `${ENV.FRONT_URL.replace(/\/$/, "")}/callback`;
+
         const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
             method: "POST",
             headers: {
@@ -30,9 +32,9 @@ export const githubAuthStudent = async (req: Request, res: Response) => {
             },
             body: new URLSearchParams({
                 client_id: ENV.CLIENT_ID,
-                client_secret: ENV.GITHUB_APP_CLIENT_SECRET,
+                client_secret: ENV.CLIENT_SECRET,
                 code,
-                redirect_uri: ENV.FRONT_URL + "/callback",
+                redirect_uri: redirectUri,
             }),
         });
 
