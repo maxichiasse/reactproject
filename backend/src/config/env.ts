@@ -1,7 +1,4 @@
 //backend/src/config/env.ts
-import * as dotenv from "dotenv";
-dotenv.config({path: ".env.local"});
-
 function required(name: string): string {
     const value = process.env[name];
     if (!value) throw new Error(`❌ Variable d'environnement manquante : ${name}`);
@@ -24,5 +21,6 @@ export const ENV = {
     GITHUB_APP_CLIENT_SECRET: required("GITHUB_APP_CLIENT_SECRET"),
 };
 
-
+console.log("🌍 Environnement :", process.env.NODE_ENV);
+console.log("📁 Base MySQL :", process.env.MYSQLHOST);
 

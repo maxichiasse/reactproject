@@ -1,12 +1,20 @@
 //backend/src/server.ts
-import "reflect-metadata";
 import * as dotenv from "dotenv";
+
+// 🧩 Charge le bon fichier d'environnement AVANT tout autre import
+if (process.env.NODE_ENV === "production") {
+    dotenv.config({ path: ".env.production" });
+    console.log("🚀 Mode production : .env.production chargé");
+} else {
+    dotenv.config({ path: ".env.local" });
+    console.log("🧪 Mode développement : .env.local chargé");
+}
+
+import "reflect-metadata";
 import { AppDataSource } from "./data-source";
 import { app } from "./app";
 import express from "express";
 import path from "path";
-
-dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 

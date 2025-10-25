@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "nodemon --exec ts-node -P tsconfig.json src/server.ts",
-    "build": "tsc --project tsconfig.json",
-    "start": "node dist/server.js",
+    "build:backend": "tsc --project tsconfig.json",
+    "start:backend": "node dist/server.js",
     "add-prof": "dotenv -e .env.production -- ts-node -P tsconfig.json src/scripts/add-prof.ts"
   },
   "dependencies": {
