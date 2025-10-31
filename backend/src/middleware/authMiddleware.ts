@@ -4,7 +4,7 @@ import * as jwt from "jsonwebtoken";
 import { ENV } from "../config/env";
 
 export interface AuthRequest extends Request {
-    user?: { id: number };
+    user?: { id: number; login?: string; avatar_url?: string; name?: string };
 }
 
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
@@ -12,7 +12,9 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
     if (!token) return res.status(401).json({ error: "Non authentifié" });
 
     try {
-        req.user = jwt.verify(token, ENV.JWT_SECRET, { algorithms: ["HS256"] }) as { id: number };
+        req.user = jwt.verify(token, ENV.JWT_SECRET, {
+            algorithms: ["HS256"],
+        }) as any;
         next();
     } catch {
         return res.status(403).json({ error: "Token invalide ou expiré" });

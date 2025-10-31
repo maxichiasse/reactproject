@@ -1,16 +1,17 @@
 // frontend/src/pages/MainPage/index.tsx
 import styles from './MainPage.module.scss';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { authAPI } from "@api/auth";
 import { useToast } from "@hooks/useToast";
 import { useEffect } from "react";
 import { ENV } from "@config/env";
+import { useAuth } from "@contexts/AuthContext";
 
 const MainPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { showToast, ToastContainer } = useToast();
     const error = searchParams.get("error");
+    const { user, loading } = useAuth(); // ✅ récupère l’utilisateur depuis le context global
 
     /** 🔁 Redirige vers la page d’autorisation GitHub */
     const redirectToGitHub = () => {
@@ -18,26 +19,18 @@ const MainPage = () => {
         const url = `https://github.com/login/oauth/authorize` +
             `?client_id=${ENV.GITHUB_CLIENT_ID}` +
             `&scope=read:user%20read:org%20repo` +
-            `&redirect_uri=${redirectUri}` +
-            `&prompt=consent`;
-        console.log("🔑 CLIENT_ID:", ENV.GITHUB_CLIENT_ID);
-        console.log("↩️ Redirect URI:", redirectUri);
+            `&redirect_uri=${redirectUri}`;
         window.location.href = url;
     };
 
     /** 📂 Si l’utilisateur est connecté → /orgs, sinon → GitHub OAuth */
-    const handleProjects = async () => {
-        try {
-            const res = await authAPI.me();
-            if (res.status === 200) {
-                showToast("✅ Connexion confirmée, redirection vers vos organisations...", "success");
-                setTimeout(() => navigate("/orgs"), 1200);
-            } else {
-                showToast("⚠️ Vous devez vous connecter via GitHub.", "info");
-                redirectToGitHub();
-            }
-        } catch {
-            showToast("❌ Session expirée, reconnectez-vous via GitHub.", "error");
+    const handleProjects = () => {
+        if (loading) return; // 🕒 attend que AuthContext ait fini sa requête
+        if (user) {
+            showToast("✅ Connexion confirmée, redirection vers vos organisations...", "success");
+            setTimeout(() => navigate("/orgs"), 1200);
+        } else {
+            showToast("⚠️ Vous devez vous connecter via GitHub.", "info");
             redirectToGitHub();
         }
     };

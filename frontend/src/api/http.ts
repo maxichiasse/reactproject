@@ -7,22 +7,17 @@ import axios from "axios";
  *  - le baseURL selon l'environnement
  *  - les cookies (JWT)
  *  - les intercepteurs d'erreurs 401
- *  - le token Bearer si présent en localStorage
  */
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
     withCredentials: true,
-    timeout: 15000, // ⏳ Timeout de 15 secondes
+    timeout: 15000,
 });
 
 // === Intercepteur requêtes ===
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("jwt");
-        if (token) config.headers.Authorization = `Bearer ${token}`;
-        return config;
-    },
+    (config) => config,
     (error) => Promise.reject(error)
 );
 
@@ -35,7 +30,6 @@ api.interceptors.response.use(
 
         if (status === 401) {
             console.warn("🔒 Non authentifié (401)");
-            // ❌ Ne redirige PAS sur les routes publiques (comme /CreateGroup)
             const publicPaths = ["/", "/callback"];
             const isCreateGroup = currentPath.startsWith("/CreateGroup");
             if (!publicPaths.includes(currentPath) && !isCreateGroup) {

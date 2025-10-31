@@ -1,10 +1,12 @@
-//backend/src/scripts/add-prof.ts
+// backend/src/scripts/add-prof.ts
 import "reflect-metadata";
 import * as dotenv from "dotenv";
-dotenv.config();
-
-import { AppDataSource } from "../data-source";
+import { DataSource } from "typeorm";
 import { Prof } from "../entity/Prof";
+import { Organization } from "../entity/Organization";
+import { Project } from "../entity/Project";
+import { Group } from "../entity/Group";
+import { Student } from "../entity/Student";
 import axios from "axios";
 import * as crypto from "crypto";
 
@@ -20,70 +22,88 @@ function encryptToken(token: string): string {
     return iv.toString("hex") + ":" + encrypted.toString("hex");
 }
 
-// ─── 🏁 Script principal ───────────────────────────────────────────────────────
-const plainToken = process.argv[2];
+// ─── ⚙️ Fonction d’ajout dans une base donnée ────────────────────────────────
+async function addToDatabase(envFile: string, label: string, plainToken: string) {
+    // ⚠️ Important : override = true pour remplacer les anciennes valeurs
+    dotenv.config({ path: envFile, override: true });
 
-if (!plainToken) {
-    console.error("❌ Tu dois passer le token GitHub en argument !");
-    console.error("Exemple : npx ts-node src/backend/scripts/add-prof.ts ghp_tonToken");
-    process.exit(1);
-}
+    const host = process.env.MYSQLHOST!;
+    const port = Number(process.env.MYSQLPORT!);
+    const user = process.env.MYSQLUSER!;
+    const database = process.env.MYSQLDATABASE!;
 
-AppDataSource.initialize().then(async () => {
-    console.log("✅ Connexion à la base de données réussie");
+    const db = new DataSource({
+        type: "mariadb",
+        host,
+        port,
+        username: user,
+        password: process.env.MYSQLPASSWORD!,
+        database,
+        entities: [Prof, Organization, Project, Group, Student],
+        synchronize: false,
+        logging: false,
+    });
+
+    console.log(`\n🔹 [${label}] Connexion à ${host}:${port} (user: ${user}, db: ${database})...`);
+    await db.initialize();
+    console.log(`✅ [${label}] Base de données connectée (${database})`);
+
+    const profRepo = db.getRepository(Prof);
 
     try {
-        // 1. Appel API GitHub pour valider le token
+        // 1️⃣ Vérification du token via l’API GitHub
         const response = await axios.get("https://api.github.com/user", {
-            headers: {
-                Authorization: `token ${plainToken}`,
-            },
+            headers: { Authorization: `token ${plainToken}` },
         });
 
         const scopes = response.headers["x-oauth-scopes"];
         const { id, login, name, avatar_url } = response.data;
 
-        console.log("🔍 Token validé !");
-        console.log(`👤 Utilisateur GitHub : ${login} (${id})`);
-        console.log(`🛡️ Scopes du token   : ${scopes || "Aucun scope retourné"}`);
+        console.log(`🔍 [${label}] Token validé pour ${login}`);
+        console.log(`🛡️ [${label}] Scopes du token : ${scopes || "Non spécifié"}`);
 
-        // 2. Chiffrement du token
+        // 2️⃣ Chiffrement du token
         const encryptedToken = encryptToken(plainToken);
 
-        // 3. Insertion ou mise à jour en base de données
-        const profRepo = AppDataSource.getRepository(Prof);
+        // 3️⃣ Ajout ou mise à jour du professeur
         const existing = await profRepo.findOneBy({ login });
 
         if (existing) {
-            console.log(`♻️ Mise à jour du prof ${login}...`);
+            console.log(`♻️ [${label}] Mise à jour du prof ${login}...`);
             existing.encryptedToken = encryptedToken;
             await profRepo.save(existing);
-            console.log("✅ Mise à jour réussie !");
+            console.log(`✅ [${label}] Mise à jour réussie !`);
         } else {
-            const prof = profRepo.create({
-                id,
-                login,
-                name,
-                avatar_url,
-                encryptedToken,
-            });
+            const prof = profRepo.create({ id, login, name, avatar_url, encryptedToken });
             await profRepo.save(prof);
-            console.log("✅ Nouveau prof ajouté en base !");
+            console.log(`✅ [${label}] Nouveau prof ajouté !`);
         }
-
     } catch (err: any) {
-        if (err.response?.status === 401) {
-            console.error("❌ Token invalide ou expiré (401 Unauthorized)");
-        } else if (err.response?.status === 403) {
-            console.error("❌ Accès interdit à l’API GitHub (403 Forbidden)");
-        } else {
-            console.error("❌ Erreur lors de l’appel GitHub :", err.message);
-        }
-        process.exit(1);
+        console.error(`❌ [${label}] Erreur :`, err.response?.data?.message || err.message);
+    } finally {
+        await db.destroy();
+        console.log(`🔚 [${label}] Connexion fermée.`);
     }
+}
 
-    process.exit(0);
-}).catch((err) => {
-    console.error("❌ Erreur DB :", err.message);
+// ─── 🏁 Script principal ─────────────────────────────────────────────────────
+const plainToken = process.argv[2];
+if (!plainToken) {
+    console.error("❌ Tu dois passer le token GitHub en argument !");
+    console.error("Exemple : npm run add-prof ghp_tonToken");
     process.exit(1);
-});
+}
+
+(async () => {
+    console.log("🚀 Début de l’ajout du professeur dans les deux bases...");
+
+    // ➤ Ajout base locale
+    await addToDatabase(".env.local", "LOCAL", plainToken);
+
+    // ➤ Ajout base Railway
+    await addToDatabase(".env.production", "RAILWAY", plainToken);
+
+    console.log("\n🏁 Terminé : professeur ajouté/mis à jour dans les deux bases !");
+    process.exit(0);
+})();
+

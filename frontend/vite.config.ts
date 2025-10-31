@@ -21,6 +21,16 @@ export default defineConfig({
             '@pages': path.resolve(__dirname, './src/pages'),
             '@styles': path.resolve(__dirname, './src/styles'),
             '@types': path.resolve(__dirname, './src/types')
-        }
-    }
-});
+        },
+    },
+    server: {
+        port: 5173,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:4000', // ton backend
+                changeOrigin: true,
+                secure: false,
+            },
+        },
+    },
+})

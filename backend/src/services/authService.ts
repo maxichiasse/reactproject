@@ -30,7 +30,7 @@ interface GithubOrg {
  * 🔹 Authentifie un prof via GitHub OAuth et synchronise ses organisations
  */
 export async function handleGithubAuth(code: string) {
-    // 1️⃣ Échange du code utilisateur contre un access_token
+    // 1️⃣ Échange code OAuth ↔️ access_token GitHub
     const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
@@ -47,56 +47,42 @@ export async function handleGithubAuth(code: string) {
 
     const userToken = tokenData.access_token;
 
-    // 2️⃣ Récupérer les infos du prof GitHub
+    // 2️⃣ Infos GitHub user
     const userResponse = await fetch("https://api.github.com/user", {
         headers: { Authorization: `Bearer ${userToken}` },
     });
     const userData = (await userResponse.json()) as GithubUser;
 
-    // 3️⃣ Vérifie si le prof existe déjà en DB
+    // 3️⃣ Vérifie si le prof existe
     const userRepo = AppDataSource.getRepository(Prof);
     let prof = await userRepo.findOneBy({ id: userData.id });
-    if (!prof) {
-        // Le prof doit déjà exister en DB sinon on bloque (ou on peut le créer ici)
-        throw new Error("Accès refusé : prof non autorisé");
-    }
+    if (!prof) throw new Error("Accès refusé : prof non autorisé");
 
-    // 4️⃣ Met à jour les infos du prof et stocke le token utilisateur OAuth
+    // 4️⃣ Mise à jour infos + token chiffré
     prof.login = userData.login;
     prof.name = userData.name;
     prof.avatar_url = userData.avatar_url;
-    prof.encryptedToken = encrypt(userToken); // ✅ on enregistre le vrai token utilisateur
+    prof.encryptedToken = encrypt(userToken);
     await userRepo.save(prof);
 
-    // 5️⃣ Récupère toutes les organisations GitHub du prof
+    // 5️⃣ Synchronisation des organisations GitHub
     const orgResponse = await fetch("https://api.github.com/user/orgs", {
         headers: { Authorization: `Bearer ${userToken}` },
     });
 
     const orgsGithub = (await orgResponse.json()) as GithubOrg[];
-    if (!Array.isArray(orgsGithub)) {
-        console.error("❌ Erreur GitHub lors de la récupération des organisations:", orgsGithub);
-        throw new Error("Impossible de récupérer les organisations GitHub");
-    }
-
-    // 6️⃣ Synchronisation des organisations dans la DB
     const orgRepo = AppDataSource.getRepository(Organization);
     const localOrgs = await orgRepo.find({ where: { ownerId: prof.id } });
 
-    // 🔁 Noms pour comparaison
     const githubOrgNames = orgsGithub.map((o) => o.login);
-    const localOrgNames = localOrgs.map((o) => o.name);
 
-    // 🟩 Ajout / mise à jour
     for (const org of orgsGithub) {
         const orgDetailResponse = await fetch(`https://api.github.com/orgs/${org.login}`, {
             headers: { Authorization: `Bearer ${userToken}` },
         });
         const orgDetail = (await orgDetailResponse.json()) as GithubOrg;
 
-        const totalRepos =
-            (orgDetail.public_repos || 0) + (orgDetail.total_private_repos || 0);
-
+        const totalRepos = (orgDetail.public_repos || 0) + (orgDetail.total_private_repos || 0);
         let existing = await orgRepo.findOneBy({ name: org.login, ownerId: prof.id });
         if (!existing) {
             existing = orgRepo.create({
@@ -109,11 +95,9 @@ export async function handleGithubAuth(code: string) {
             existing.avatar_url = org.avatar_url;
             existing.public_repos = totalRepos;
         }
-
         await orgRepo.save(existing);
     }
 
-    // 🟥 Suppression des orgs qui n'existent plus sur GitHub
     for (const local of localOrgs) {
         if (!githubOrgNames.includes(local.name)) {
             console.log(`🗑️ Suppression de ${local.name} (n'existe plus sur GitHub)`);
@@ -121,15 +105,14 @@ export async function handleGithubAuth(code: string) {
         }
     }
 
-    console.log(
-        `✅ SyncOrgs terminée : ${orgsGithub.length} organisations synchronisées pour ${prof.login}`
-    );
+    console.log(`✅ SyncOrgs terminée : ${orgsGithub.length} organisations pour ${prof.login}`);
 
-    // 7️⃣ Génère un JWT local pour la session web
+    // 6️⃣ JWT de session local
     const token = jwt.sign(
         { id: prof.id, login: prof.login, avatar_url: prof.avatar_url, name: prof.name },
         ENV.JWT_SECRET,
-        { expiresIn: "2h", algorithm: "HS256" }    );
+        { expiresIn: "2h", algorithm: "HS256" }
+    );
 
-    return token;
+    return { token, user: { id: prof.id, login: prof.login, name: prof.name, avatar_url: prof.avatar_url } };
 }

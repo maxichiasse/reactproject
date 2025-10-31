@@ -92,4 +92,3 @@ export async function syncInstalledOrganizations(profId: number) {
     console.log(`✅ SyncInstalledOrgs : ${finalList.length} organisations via GitHub App pour ${prof.login}`);
     return finalList;
 }
-

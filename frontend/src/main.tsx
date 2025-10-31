@@ -7,11 +7,11 @@ import '@styles/main.scss';
 import App from './App'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-      <Router>
-          <AuthProvider>
-              <App />
-          </AuthProvider>
-      </Router>
-  </StrictMode>,
+    <StrictMode>
+        <Router>
+            <AuthProvider>
+                <App />
+            </AuthProvider>
+        </Router>
+    </StrictMode>,
 )
