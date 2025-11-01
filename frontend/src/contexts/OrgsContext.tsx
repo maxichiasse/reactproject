@@ -1,16 +1,10 @@
-// frontend/src/context/OrgsContext.tsx
+// frontend/src/contexts/OrgsContext.tsx
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import axios from "axios";
-
-interface Org {
-    id?: number;
-    name: string;
-    avatar_url: string;
-    public_repos: number;
-}
+import { orgsAPI } from "@api/orgs";
+import type { Organization } from "types/Organization";
 
 interface OrgsContextType {
-    orgs: Org[];
+    orgs: Organization[];
     loading: boolean;
     error: string | null;
     refreshOrgs: () => Promise<void>;
@@ -19,35 +13,33 @@ interface OrgsContextType {
 const OrgsContext = createContext<OrgsContextType | undefined>(undefined);
 
 export const OrgsProvider = ({ children }: { children: ReactNode }) => {
-    const [orgs, setOrgs] = useState<Org[]>([]);
+    const [orgs, setOrgs] = useState<Organization[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [lastFetched, setLastFetched] = useState<number | null>(null);
 
     const fetchOrgs = async () => {
         try {
             setLoading(true);
             setError(null);
-
-            const res = await axios.get("/api/organizations", { withCredentials: true });
-            console.log("📦 Résultat /api/organizations:", res.data);
-
+            const res = await orgsAPI.getAllWithRepoCount();
             if (Array.isArray(res.data)) {
                 setOrgs(res.data);
+                setLastFetched(Date.now());
             } else {
-                console.error("⚠️ Réponse inattendue du backend:", res.data);
-                setOrgs([]); // évite crash
-                setError("Format inattendu reçu du serveur");
+                setError("Format inattendu du serveur");
             }
         } catch (err: any) {
-            console.error("❌ Erreur chargement organisations:", err.message);
+            console.error("❌ Erreur chargement orgs:", err.message);
             setError("Impossible de récupérer les organisations");
         } finally {
             setLoading(false);
         }
     };
 
+    // Charger une seule fois ou si les données ont plus de 10 minutes
     useEffect(() => {
-        if (orgs.length === 0) {
+        if (!lastFetched || Date.now() - lastFetched > 10 * 60 * 1000) {
             fetchOrgs();
         }
     }, []);
@@ -59,8 +51,8 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useOrgsContext = () => {
+export const useOrgs = () => {
     const ctx = useContext(OrgsContext);
-    if (!ctx) throw new Error("useOrgsContext doit être utilisé dans un OrgsProvider");
+    if (!ctx) throw new Error("useOrgs doit être utilisé dans un OrgsProvider");
     return ctx;
 };

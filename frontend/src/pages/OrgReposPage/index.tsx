@@ -1,7 +1,6 @@
 //frontend/src/pages/OrgReposPage/index.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { projectsAPI } from "@api/projects";
 import { orgsAPI } from "@api/orgs";
 import type { Project } from "types/Project";
 import type { Repository } from "types/Repository";
@@ -17,24 +16,21 @@ const OrgReposPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data: projectData } = await projectsAPI.get(orgName!);
-                setProject(projectData);
-            } catch {
+                const { data } = await orgsAPI.getDetails(orgName!);
+                setProject(data.project);
+                setRepos(data.repositories);
+            } catch (err) {
+                console.error("❌ Erreur lors du chargement des détails:", err);
                 setProject(null);
-            }
-
-            try {
-                const { data: reposData } = await orgsAPI.getRepos(orgName!);
-                setRepos(reposData);
-            } catch {
                 setRepos([]);
+            } finally {
+                setLoading(false);
             }
-
-            setLoading(false);
         };
 
         fetchData();
     }, [orgName]);
+
 
     if (loading) return <p>Chargement...</p>;
 

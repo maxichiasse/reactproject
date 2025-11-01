@@ -8,6 +8,9 @@ export class Organization {
     @PrimaryGeneratedColumn()
     id!: number;
 
+    @Column({ unique: true })
+    githubId!: number;
+
     @Column()
     name!: string;
 

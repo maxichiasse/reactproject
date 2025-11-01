@@ -1,13 +1,15 @@
-//frontend/src/api/orgs.ts
-import { api } from "./http"
+// frontend/src/api/orgs.ts
+import { api } from "./http";
 
 export const orgsAPI = {
-    // 📦 Récupère la liste des organisations du user
+    /** 📦 Liste des organisations du prof avec nombre de repos GitHub */
+    getAllWithRepoCount: () => api.get("/api/organizations-with-repo-count"),
+
+    /** 🧩 Détails d’une organisation : projet + repos */
+    getDetails: (orgName: string) => api.get(`/api/organizations/${orgName}/details`),
+
+    /** ⚙️ Anciennes méthodes (encore utilisées ailleurs éventuellement) */
     getAll: () => api.get("/api/organizations"),
-
-    // 🔍 Vérifie s’il existe déjà un projet lié à une org
     getProjectForOrg: (orgName: string) => api.get(`/api/organizations/${orgName}/project`),
-
-    // 📁 Récupère les repos GitHub d’une organisation
     getRepos: (orgName: string) => api.get(`/api/organizations/${orgName}/repos`),
 };
