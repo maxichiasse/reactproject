@@ -1,7 +1,7 @@
 // frontend/src/pages/MainPage/index.tsx
 import styles from './MainPage.module.scss';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useToast } from "@hooks/useToast";
+import { useToast } from "@contexts/ToastContext";
 import { useEffect } from "react";
 import { ENV } from "@config/env";
 import { useAuth } from "@contexts/AuthContext";
@@ -9,7 +9,7 @@ import { useAuth } from "@contexts/AuthContext";
 const MainPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { showToast, ToastContainer } = useToast();
+    const { showToast } = useToast();
     const error = searchParams.get("error");
     const { user, loading } = useAuth(); // ✅ récupère l’utilisateur depuis le context global
 
@@ -57,7 +57,7 @@ const MainPage = () => {
                 </button>
             </div>
 
-            <ToastContainer />
+
         </div>
     );
 };

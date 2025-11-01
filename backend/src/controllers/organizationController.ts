@@ -148,56 +148,84 @@ export const getOrganizationRepos = async (req: Request, res: Response) => {
 };
 
 /**
- * 🔹 Récupère les organisations du prof avec le nombre de repos GitHub (sans stocker)
+ * 🔹 Récupère toutes les organisations GitHub du prof connecté
+ *     + leurs dépôts publics associés.
  */
 export const getOrganizationsWithRepoCount = async (req: Request, res: Response) => {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ error: "Non authentifié" });
 
     try {
+        // 🔐 Décodage du token JWT
         const decoded = jwt.verify(token, ENV.JWT_SECRET) as { login: string };
         const profRepo = AppDataSource.getRepository(Prof);
         const prof = await profRepo.findOneBy({ login: decoded.login });
         if (!prof) return res.status(403).json({ error: "Prof non autorisé" });
 
+        // 🔑 Déchiffre le token personnel GitHub (PAT)
         const decryptedPAT = decryptToken(prof.encryptedToken);
 
+        // 🧩 Récupère toutes les organisations dont le prof est membre/owner
         const orgRes = await fetch("https://api.github.com/user/orgs", {
             headers: {
                 Authorization: `Bearer ${decryptedPAT}`,
                 Accept: "application/vnd.github+json",
+                "User-Agent": "GitHelper-App",
             },
         });
 
         if (!orgRes.ok) throw new Error(`Erreur GitHub : ${orgRes.status}`);
         const orgs = await orgRes.json();
 
-        const results = [];
-        for (const org of orgs) {
-            const reposRes = await fetch(`https://api.github.com/orgs/${org.login}/repos?per_page=1`, {
-                headers: {
-                    Authorization: `Bearer ${decryptedPAT}`,
-                    Accept: "application/vnd.github+json",
-                },
-            });
+        const results: any[] = [];
 
-            let repoCount = 0;
-            const linkHeader = reposRes.headers.get("Link");
-            if (linkHeader && /&page=(\d+)>; rel="last"/.test(linkHeader)) {
-                repoCount = parseInt(linkHeader.match(/&page=(\d+)>; rel="last"/)![1]);
-            } else {
-                const repos = await reposRes.json();
-                repoCount = repos.length;
-            }
+        // ⚡️ Promise.all pour accélérer le fetch des repos
+        await Promise.all(
+            orgs.map(async (org: any) => {
+                try {
+                    // 📦 Requêtes GitHub pour récupérer tous les dépôts publics de l'organisation
+                    const reposRes = await fetch(
+                        `https://api.github.com/orgs/${org.login}/repos?per_page=100`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${decryptedPAT}`,
+                                Accept: "application/vnd.github+json",
+                                "User-Agent": "GitHelper-App",
+                            },
+                        }
+                    );
 
-            results.push({
-                id: org.id,
-                name: org.login,
-                avatar_url: org.avatar_url,
-                repoCount,
-            });
-        }
+                    if (!reposRes.ok) {
+                        console.warn(`⚠️ Impossible de récupérer les dépôts pour ${org.login}`);
+                        return;
+                    }
 
+                    const repos = await reposRes.json();
+
+                    // 🧩 Simplifie les dépôts (frontend-friendly)
+                    const simplifiedRepos = Array.isArray(repos)
+                        ? repos.map((r: any) => ({
+                            id: r.id,
+                            name: r.name,
+                            html_url: r.html_url,
+                            description: r.description || "Pas de description",
+                        }))
+                        : [];
+
+                    results.push({
+                        id: org.id,
+                        name: org.login || org.name,
+                        avatar_url: org.avatar_url,
+                        repoCount: simplifiedRepos.length,
+                        repos: simplifiedRepos,
+                    });
+                } catch (innerErr: any) {
+                    console.error(`❌ Erreur lors du fetch des repos de ${org.login}:`, innerErr.message);
+                }
+            })
+        );
+
+        console.log(`✅ ${results.length} organisations synchronisées pour ${prof.login}`);
         return res.json(results);
     } catch (err: any) {
         console.error("❌ Erreur getOrganizationsWithRepoCount:", err.message);

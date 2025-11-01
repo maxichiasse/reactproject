@@ -26,7 +26,37 @@
     font-size: 0.95rem;
     text-align: left;
 
-    h2 { margin: 0 0 $space-s; }
+    h2 {
+      margin: 0 0 $space-s;
+    }
+
+    /* ✅ Ligne du lien + icône */
+    .copyLine {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .linkText {
+        color: #007bff;
+        text-decoration: underline;
+        word-break: break-all;
+      }
+
+      .copyIcon {
+        cursor: pointer;
+        color: #444;
+        transition: color 0.2s ease, transform 0.1s ease;
+
+        &:hover {
+          color: #007bff;
+          transform: scale(1.1);
+        }
+
+        &.copied {
+          color: #28a745; /* vert temporaire après copie */
+        }
+      }
+    }
   }
 
   .repoGrid {
@@ -62,3 +92,4 @@
     }
   }
 }
+

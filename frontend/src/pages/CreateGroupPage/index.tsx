@@ -1,7 +1,7 @@
 //src/pages/CreateGroupPage/index.tsx
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { useToast } from "@hooks/useToast";
+import { useToast } from "@contexts/ToastContext";
 import { projectsAPI } from "@api/projects";
 import styles from "./CreateGroup.module.scss";
 import {ENV} from "@config/env";
@@ -31,7 +31,7 @@ const CreateGroupPage = () => {
     const [activeInput, setActiveInput] = useState<number | null>(null);
     const [creating, setCreating] = useState(false);
     const alreadyFetched = useRef(false);
-    const { showToast, ToastContainer } = useToast();
+    const { showToast } = useToast();
     const navigate = useNavigate();
 
     const code = searchParams.get("code");
@@ -192,7 +192,6 @@ const CreateGroupPage = () => {
                 </div>
             )}
 
-            <ToastContainer />
         </div>
     );
 };

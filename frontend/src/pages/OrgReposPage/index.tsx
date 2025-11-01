@@ -4,6 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { orgsAPI } from "@api/orgs";
 import type { Project } from "types/Project";
 import type { Repository } from "types/Repository";
+import { ENV } from "@config/env";
+import { Clipboard } from "lucide-react";
+import { useToast } from "@contexts/ToastContext";
 import styles from "./OrgReposPage.module.scss";
 
 const OrgReposPage = () => {
@@ -11,6 +14,8 @@ const OrgReposPage = () => {
     const [project, setProject] = useState<Project | null>(null);
     const [repos, setRepos] = useState<Repository[]>([]);
     const [loading, setLoading] = useState(true);
+    const [copied, setCopied] = useState(false);
+    const { showToast } = useToast();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -31,6 +36,18 @@ const OrgReposPage = () => {
         fetchData();
     }, [orgName]);
 
+    const handleCopy = (text: string) => {
+        navigator.clipboard
+            .writeText(text)
+            .then(() => {
+                setCopied(true);
+                showToast("📋 Lien copié !", "success");
+                setTimeout(() => setCopied(false), 1500);
+            })
+            .catch(() => {
+                showToast("❌ Erreur lors de la copie du lien", "error");
+            });
+    };
 
     if (loading) return <p>Chargement...</p>;
 
@@ -47,7 +64,34 @@ const OrgReposPage = () => {
                 <div className={styles.projectCard}>
                     <h2>📑 Projet</h2>
                     <p><b>Clé secrète :</b> {project.secretKey}</p>
-                    <p><b>Lien d’inscription :</b> {project.joinUrl} </p>
+
+                    {/* ✅ Lien d’inscription affiché proprement avec icône de copie */}
+                    {(() => {
+                        const joinUrl =
+                            project.joinUrl ||
+                            `${ENV.FRONT_URL}/CreateGroup/${project.id}/${project.secretKey}`;
+
+                        return (
+                            <p className={styles.copyLine}>
+                                <b>Lien :</b>{" "}
+                                <a
+                                    href={joinUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={styles.linkText}
+                                >
+                                    {joinUrl}
+                                </a>
+                                <Clipboard
+                                    className={`${styles.copyIcon} ${copied ? styles.copied : ""}`}
+                                    size={18}
+                                    onClick={() => handleCopy(joinUrl)}
+                                    title="Copier le lien"
+                                />
+                            </p>
+                        );
+                    })()}
+
                     <p><b>Étudiants :</b> {project.minStudents} - {project.maxStudents}</p>
                     <p><b>Groupes max :</b> {project.maxGroups}</p>
                 </div>

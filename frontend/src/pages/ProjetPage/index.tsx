@@ -2,14 +2,14 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { projectsAPI } from "@api/projects";
-import { useToast } from "@hooks/useToast";
+import { useToast } from "@contexts/ToastContext";
 import styles from "./ProjetPage.module.scss";
 import type { AxiosError } from "axios";
 
 const ProjetPage = () => {
     const { orgName } = useParams<{ orgName: string }>();
     const navigate = useNavigate();
-    const { showToast, ToastContainer } = useToast();
+    const { showToast } = useToast();
 
     const [form, setForm] = useState({
         minStudents: 1,
@@ -95,8 +95,7 @@ const ProjetPage = () => {
                 </form>
             </div>
 
-            {/* ✅ Zone d’affichage des toasts */}
-            <ToastContainer />
+
         </div>
     );
 };
