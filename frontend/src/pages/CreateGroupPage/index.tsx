@@ -32,7 +32,6 @@ const CreateGroupPage = () => {
     const [creating, setCreating] = useState(false);
     const alreadyFetched = useRef(false);
     const { showToast } = useToast();
-    const navigate = useNavigate();
 
     const code = searchParams.get("code");
 
@@ -123,7 +122,8 @@ const CreateGroupPage = () => {
                 students: selected,
             });
             showToast(`✅ Groupe créé avec succès : ${res.data.groupName}`, "success");
-            navigate(0);
+            const repoUrl = res.data.repoUrl || res.data.html_url || null;
+            window.location.href = repoUrl;
         } catch (err: any) {
             showToast(`❌ Erreur lors de la création du groupe : ${err.response?.data?.error || err.message}`, "error");
         } finally {

@@ -40,6 +40,8 @@ export const githubAuthStudent = async (req: Request, res: Response) => {
 
         const tokenData = await tokenResponse.json();
         const token = tokenData.access_token;
+        console.log("🔎 Token data reçu depuis GitHub:", tokenData);
+
         if (!token) throw new Error("Impossible d’obtenir un access_token étudiant");
 
         // 2️⃣ Récupère les infos GitHub de l'utilisateur

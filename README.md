@@ -7,8 +7,11 @@ Pour que les profs puissent se connecter à l'application, chaque professeur doi
 Lorsque vous créez un token GitHub (classic), cochez uniquement **ces 3 scopes** :
 
 - `read:user` → pour lire votre nom, login et avatar
+- `user:email`
+- `read:org`
 - `write:org` → pour gérer les organisations
 - `repo` → pour créer les projets dans les repositories de vos organisations
+- `delete_repo`
 
 🛠️ Le token peut avoir une **expiration de 90 jours** (recommandé pour la sécurité).
 

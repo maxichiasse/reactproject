@@ -10,6 +10,7 @@ export const ENV = {
     CLIENT_SECRET: required("CLIENT_SECRET"),
     JWT_SECRET: required("JWT_SECRET"),
     ENCRYPTION_KEY: required("ENCRYPTION_KEY"),
+    TOKEN_SECRET: required("TOKEN_SECRET"),
     FRONT_URL:
         process.env.NODE_ENV === "production"
             ? "https://githelper.up.railway.app"
@@ -23,4 +24,5 @@ export const ENV = {
 
 console.log("🌍 Environnement :", process.env.NODE_ENV);
 console.log("📁 Base MySQL :", process.env.MYSQLHOST);
+console.log("🔐 TOKEN_SECRET chargé :", process.env.TOKEN_SECRET ? "✅ oui" : "❌ non");
 
