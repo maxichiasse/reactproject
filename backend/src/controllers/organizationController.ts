@@ -23,6 +23,50 @@ function decryptToken(encrypted: string): string {
 }
 
 /**
+ * 💾 Met à jour ou insère les organisations GitHub d’un prof dans la DB
+ */
+async function upsertOrganizationsForProf(prof: Prof, orgsFromGithub: any[]) {
+    const orgRepo = AppDataSource.getRepository(Organization);
+    const currentIds: number[] = [];
+
+    for (const org of orgsFromGithub) {
+        currentIds.push(org.id);
+        const existing = await orgRepo.findOneBy({ githubId: org.id });
+
+        if (!existing) {
+            await orgRepo.save({
+                githubId: org.id,
+                name: org.login || org.name,
+                avatar_url:
+                    org.avatar_url ||
+                    "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                public_repos: org.public_repos ?? 0,
+                owner: prof,
+                ownerId: prof.id,
+            });
+        } else {
+            existing.name = org.login || org.name;
+            existing.avatar_url = org.avatar_url;
+            existing.public_repos = org.public_repos ?? 0;
+            existing.owner = prof;
+            existing.ownerId = prof.id;
+            await orgRepo.save(existing);
+        }
+    }
+
+    // 🗑️ Supprime les organisations locales supprimées sur GitHub
+    const allLocal = await orgRepo.find({ where: { owner: prof } });
+    for (const local of allLocal) {
+        if (!currentIds.includes(local.githubId)) {
+            await orgRepo.remove(local);
+            console.log(`🗑️ Supprimé : ${local.name} (n'existe plus sur GitHub)`);
+        }
+    }
+
+    console.log(`💾 Sauvegarde OK : ${orgsFromGithub.length} organisations pour ${prof.login}`);
+}
+
+/**
  * 🧠 Cache mémoire pour limiter les appels GitHub (clé = login prof)
  */
 const orgCache = new Map<string, { data: any; timestamp: number }>();
@@ -64,38 +108,8 @@ export const getOrganizations = async (req: Request, res: Response) => {
         if (!orgRes.ok) throw new Error(`Erreur GitHub : ${orgRes.status}`);
         const orgs = await orgRes.json();
 
-        const currentIds: number[] = [];
-        for (const org of orgs) {
-            const existing = await orgRepo.findOneBy({ githubId: org.id });
-            currentIds.push(org.id);
-
-            if (!existing) {
-                await orgRepo.save({
-                    githubId: org.id,
-                    name: org.login || org.name,
-                    avatar_url:
-                        org.avatar_url ||
-                        "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-                    public_repos: org.public_repos ?? 0,
-                    owner: prof,
-                    ownerId: prof.id,
-                });
-            } else {
-                existing.name = org.login || org.name;
-                existing.avatar_url = org.avatar_url;
-                existing.public_repos = org.public_repos ?? 0;
-                await orgRepo.save(existing);
-            }
-        }
-
-        // 🔹 Supprime les orgs locales supprimées sur GitHub
-        const allLocal = await orgRepo.find({ where: { owner: prof } });
-        for (const local of allLocal) {
-            if (!currentIds.includes(local.githubId)) {
-                await orgRepo.remove(local);
-                console.log(`🗑️ Supprimé : ${local.name} (n'existe plus sur GitHub)`);
-            }
-        }
+        // 🔹 Sauvegarde en base
+        await upsertOrganizationsForProf(prof, orgs);
 
         const updated = await orgRepo.find({ where: { owner: prof } });
         orgCache.set(prof.login, { data: updated, timestamp: Date.now() });
@@ -149,23 +163,25 @@ export const getOrganizationRepos = async (req: Request, res: Response) => {
 
 /**
  * 🔹 Récupère toutes les organisations GitHub du prof connecté
- *     + leurs dépôts publics associés.
+ *     + leurs dépôts publics associés, et les enregistre en DB.
  */
 export const getOrganizationsWithRepoCount = async (req: Request, res: Response) => {
+    // 🚫 Désactivation du cache HTTP (empêche les 304)
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ error: "Non authentifié" });
 
     try {
-        // 🔐 Décodage du token JWT
         const decoded = jwt.verify(token, ENV.JWT_SECRET) as { login: string };
         const profRepo = AppDataSource.getRepository(Prof);
         const prof = await profRepo.findOneBy({ login: decoded.login });
         if (!prof) return res.status(403).json({ error: "Prof non autorisé" });
 
-        // 🔑 Déchiffre le token personnel GitHub (PAT)
         const decryptedPAT = decryptToken(prof.encryptedToken);
 
-        // 🧩 Récupère toutes les organisations dont le prof est membre/owner
         const orgRes = await fetch("https://api.github.com/user/orgs", {
             headers: {
                 Authorization: `Bearer ${decryptedPAT}`,
@@ -177,13 +193,14 @@ export const getOrganizationsWithRepoCount = async (req: Request, res: Response)
         if (!orgRes.ok) throw new Error(`Erreur GitHub : ${orgRes.status}`);
         const orgs = await orgRes.json();
 
+        // 💾 Sauvegarde en base
+        await upsertOrganizationsForProf(prof, orgs);
+
         const results: any[] = [];
 
-        // ⚡️ Promise.all pour accélérer le fetch des repos
         await Promise.all(
             orgs.map(async (org: any) => {
                 try {
-                    // 📦 Requêtes GitHub pour récupérer tous les dépôts publics de l'organisation
                     const reposRes = await fetch(
                         `https://api.github.com/orgs/${org.login}/repos?per_page=100`,
                         {
@@ -202,7 +219,6 @@ export const getOrganizationsWithRepoCount = async (req: Request, res: Response)
 
                     const repos = await reposRes.json();
 
-                    // 🧩 Simplifie les dépôts (frontend-friendly)
                     const simplifiedRepos = Array.isArray(repos)
                         ? repos.map((r: any) => ({
                             id: r.id,
@@ -250,13 +266,11 @@ export const getOrganizationDetails = async (req: Request, res: Response) => {
 
         const decryptedPAT = decryptToken(prof.encryptedToken);
 
-        // 🔹 Projet local
         const project = await projectRepo.findOne({
             where: { organization: { name: orgName }, owner: { id: prof.id } },
             relations: ["groups"],
         });
 
-        // 🔹 Repos GitHub
         const repoRes = await fetch(`https://api.github.com/orgs/${orgName}/repos`, {
             headers: {
                 Authorization: `Bearer ${decryptedPAT}`,

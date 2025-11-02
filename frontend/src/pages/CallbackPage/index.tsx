@@ -29,7 +29,7 @@ const CallbackPage = () => {
             .login(code)
             .then((res) => {
                 if (res.status === 200 && res.data.success) {
-                    navigate("/orgs");
+                    window.location.href = "/orgs";
                 } else if (res.status === 403) {
                     navigate("/?error=forbidden");
                 } else {

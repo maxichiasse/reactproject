@@ -14,7 +14,7 @@ export const AppDataSource = new DataSource({
     username: process.env.MYSQLUSER || "maximutd",
     password: process.env.MYSQLPASSWORD || "wBjs1AWCXDVGArjb6wxX",
     database: process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || "githelper",
-    synchronize: false,
+    synchronize: true,
     logging: ["error", "warn"],
     entities: [Prof, Organization, Project, Group, Student],
     migrations: [],
