@@ -8,21 +8,18 @@ function required(name: string): string {
 export const ENV = {
     CLIENT_ID: required("CLIENT_ID"),
     CLIENT_SECRET: required("CLIENT_SECRET"),
+
     JWT_SECRET: required("JWT_SECRET"),
     ENCRYPTION_KEY: required("ENCRYPTION_KEY"),
     TOKEN_SECRET: required("TOKEN_SECRET"),
+
     FRONT_URL:
         process.env.NODE_ENV === "production"
             ? "https://githelper.up.railway.app"
             : "http://localhost:5173",
 
-    GITHUB_APP_ID: required("GITHUB_APP_ID"),
-    GITHUB_APP_PRIVATE_KEY: required("GITHUB_APP_PRIVATE_KEY"),
-    GITHUB_APP_CLIENT_ID: required("GITHUB_APP_CLIENT_ID"),
-    GITHUB_APP_CLIENT_SECRET: required("GITHUB_APP_CLIENT_SECRET"),
 };
 
 console.log("🌍 Environnement :", process.env.NODE_ENV);
 console.log("📁 Base MySQL :", process.env.MYSQLHOST);
-console.log("🔐 TOKEN_SECRET chargé :", process.env.TOKEN_SECRET ? "✅ oui" : "❌ non");
 

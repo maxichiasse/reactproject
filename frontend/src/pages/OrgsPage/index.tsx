@@ -86,21 +86,45 @@ const OrgsPage = () => {
                                     </span>
                                 </div>
 
-                                {/* Bouton création projet */}
+                                {/* Bouton dynamique selon l’état du projet */}
                                 <div className={styles.actionWrapper}>
-                                    <button
-                                        className={styles.addButton}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate(`/orgs/${org.name}/project`);
-                                        }}
-                                    >
-                                        +
-                                    </button>
-                                    <span className={styles.createLabel}>
-                                        Créer un projet
-                                    </span>
+                                    {/* 👉 Si un projet existe ET qu’il a des groupes, on n’affiche rien */}
+                                    {!org.projectExists || !org.hasGroups ? (
+                                        <>
+                                            {org.projectExists ? (
+                                                <button
+                                                    className={styles.editButton}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/orgs/${org.name}/project`);
+                                                    }}
+                                                >
+                                                    ✏️
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className={styles.addButton}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/orgs/${org.name}/project`);
+                                                    }}
+                                                >
+                                                    +
+                                                </button>
+                                            )}
+
+                                            {/* Label d’action */}
+                                            <span
+                                                className={
+                                                    org.projectExists ? styles.editLabel : styles.createLabel
+                                                }
+                                            >
+                                                    {org.projectExists ? "Modifier le projet" : "Créer un projet"}
+                                            </span>
+                                        </>
+                                    ) : null}
                                 </div>
+
                             </li>
                         ))
                     )}

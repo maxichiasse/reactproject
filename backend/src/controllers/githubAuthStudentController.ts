@@ -1,12 +1,15 @@
 //backend/src/controllers/githubAuthStudentController.ts
 import type { Request, Response } from "express";
-import { ENV } from "../config/env";
 import { handleGithubError } from "../utils/errorHandler";
 import { githubAuthStudentSchema } from "../utils/validate";
+import { handleGithubAuthStudent } from "../services/githubAuthStudentService";
 
+/**
+ * 🎓 Authentifie un étudiant via GitHub OAuth
+ */
 export const githubAuthStudent = async (req: Request, res: Response) => {
     try {
-        // ✅ Validation Zod
+        // ✅ Étape 1 : validation Zod
         const parsed = githubAuthStudentSchema.safeParse({
             code: req.query.code,
             projectId: req.params.projectId,
@@ -19,52 +22,14 @@ export const githubAuthStudent = async (req: Request, res: Response) => {
             });
         }
 
+        // ✅ Étape 2 : délègue toute la logique au service
         const { code, projectId } = parsed.data;
+        const student = await handleGithubAuthStudent(code, projectId);
 
-        // 1️⃣ Échange du code OAuth contre un access_token
-        const redirectUri = `${ENV.FRONT_URL.replace(/\/$/, "")}/callback`;
-
-        const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                Accept: "application/json",
-            },
-            body: new URLSearchParams({
-                client_id: ENV.CLIENT_ID,
-                client_secret: ENV.CLIENT_SECRET,
-                code,
-                redirect_uri: redirectUri,
-            }),
-        });
-
-        const tokenData = await tokenResponse.json();
-        const token = tokenData.access_token;
-        console.log("🔎 Token data reçu depuis GitHub:", tokenData);
-
-        if (!token) throw new Error("Impossible d’obtenir un access_token étudiant");
-
-        // 2️⃣ Récupère les infos GitHub de l'utilisateur
-        const userResponse = await fetch("https://api.github.com/user", {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!userResponse.ok) {
-            const text = await userResponse.text();
-            throw new Error(`Erreur GitHub: ${text}`);
-        }
-
-        const data = await userResponse.json();
-
-        // 3️⃣ Réponse finale
-        res.json({
-            id: data.id,
-            login: data.login,
-            name: data.name,
-            avatar_url: data.avatar_url,
-            projectId,
-        });
+        // ✅ Étape 3 : réponse finale propre
+        return res.json(student);
     } catch (err: any) {
         return handleGithubError(res, err);
     }
 };
+

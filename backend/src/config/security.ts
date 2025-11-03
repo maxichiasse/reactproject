@@ -13,7 +13,7 @@ export function configureSecurity(app: Express) {
             contentSecurityPolicy: {
                 directives: {
                     defaultSrc: ["'self'"],
-                    scriptSrc: ["'self'", "'unsafe-inline'"],
+                    scriptSrc: ["'self'"],
                     styleSrc: ["'self'", "'unsafe-inline'"],
                     imgSrc: [
                         "'self'",
@@ -31,7 +31,6 @@ export function configureSecurity(app: Express) {
                     upgradeInsecureRequests: [],
                 },
             },
-            crossOriginResourcePolicy: { policy: "cross-origin" },
         })
     );
 }

@@ -110,3 +110,19 @@
     }
   }
 }
+
+.editButton {
+  background-color: #ffb400;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  padding: 0;
+  cursor: pointer;
+  &:hover {
+    background-color: darken(#ffb400, 10%);
+  }
+}
+

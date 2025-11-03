@@ -4,6 +4,7 @@ import { AppDataSource } from "../data-source";
 import { Project } from "../entity/Project";
 import { Prof } from "../entity/Prof";
 import { decrypt } from "../utils/crypto";
+import { githubFetch } from "../utils/github";
 
 /**
  * 🔹 Récupère et déchiffre le token GitHub du prof propriétaire d’un projet

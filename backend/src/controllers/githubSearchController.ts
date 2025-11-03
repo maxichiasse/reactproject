@@ -1,35 +1,18 @@
-//backend/src/controllers/githubSearchController.ts
+// backend/src/controllers/githubSearchController.ts
 import type { Request, Response } from "express";
-import { githubRequest } from "../services/githubService";
-import {handleGithubError} from "../utils/errorHandler";
+import { handleGithubError } from "../utils/errorHandler";
+import { searchGithubUsersByProject } from "../services/githubSearchService";
 
 /**
  * 🔍 Recherche d’utilisateurs GitHub à partir du token du prof
  */
 export const searchGithubUsers = async (req: Request, res: Response) => {
     try {
-        const { projectId } = req.params;
-        const { q } = req.query;
+        const projectId = Number(req.params.projectId);
+        const q = req.query.q as string;
 
-        // 🧩 Validation des paramètres
-        if (!q || typeof q !== "string" || q.trim().length < 1) {
-            return res.status(400).json({ error: "Paramètre de recherche manquant ou invalide." });
-        }
-
-        // 🔹 Appel GitHub via ton service (token du prof)
-        const data = await githubRequest(
-            `https://api.github.com/search/users?q=${encodeURIComponent(q)}`,
-            Number(projectId)
-        );
-
-        // 🔹 Simplifie la réponse pour le frontend
-        const results = (data.items || []).map((user: any) => ({
-            id: user.id,
-            login: user.login,
-            avatar_url: user.avatar_url,
-        }));
-
-        res.json(results);
+        const results = await searchGithubUsersByProject(projectId, q);
+        return res.json(results);
     } catch (err: any) {
         return handleGithubError(res, err);
     }

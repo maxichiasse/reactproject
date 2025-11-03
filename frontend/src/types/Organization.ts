@@ -6,4 +6,6 @@ export interface Organization {
     avatar_url: string;
     public_repos?: number;
     repoCount?: number;
+    projectExists?: boolean;
+    hasGroups?: boolean;
 }

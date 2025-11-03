@@ -1,14 +1,15 @@
-//backend/src/utils/crypto.ts
+// backend/src/utils/crypto.ts
 import crypto from "crypto";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET!;
 if (!TOKEN_SECRET) throw new Error("❌ TOKEN_SECRET manquant !");
+
 const key = Buffer.from(TOKEN_SECRET, "hex");
 const IV_LENGTH = 16;
 
+/**
+ * 🔐 Chiffre un texte en AES-256-CBC
+ */
 export function encrypt(text: string): string {
     const iv = crypto.randomBytes(IV_LENGTH);
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
@@ -16,6 +17,9 @@ export function encrypt(text: string): string {
     return iv.toString("hex") + ":" + encrypted.toString("hex");
 }
 
+/**
+ * 🔓 Déchiffre un texte AES-256-CBC
+ */
 export function decrypt(text: string): string {
     const [ivHex, encryptedHex] = text.split(":");
     const iv = Buffer.from(ivHex, "hex");

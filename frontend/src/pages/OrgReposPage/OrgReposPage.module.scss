@@ -59,24 +59,29 @@
     }
   }
 
-  .repoGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.5rem;
+    .repoGrid {
+    display: flex;
+    flex-direction: column;
+    gap: $space-m;
+    list-style: none;
+    padding: 0;
     width: 100%;
-    margin-top: $space-m;
+    max-width: 900px;
+    margin: 0 auto;
 
     .repoBox {
       @include card(1rem);
-      width: 180px;
-      height: 120px;
-      text-align: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.15s ease;
       &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        background-color: #f3f3f3;
+        transform: translateY(-2px);
       }
+
+
 
       h3 {
         margin: 0;

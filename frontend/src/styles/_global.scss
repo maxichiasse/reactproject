@@ -8,7 +8,8 @@ body, html, #root {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: $font-main;
   background-color: $background-light;
   color: $text-color;

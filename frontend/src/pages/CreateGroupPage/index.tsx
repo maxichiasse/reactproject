@@ -1,11 +1,11 @@
 //src/pages/CreateGroupPage/index.tsx
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@contexts/ToastContext";
 import { projectsAPI } from "@api/projects";
+import { ENV } from "@config/env";
+import { useDebounce } from "@hooks/useDebounce";
 import styles from "./CreateGroup.module.scss";
-import {ENV} from "@config/env";
-
 
 interface Student {
     id: number;
@@ -32,6 +32,8 @@ const CreateGroupPage = () => {
     const [creating, setCreating] = useState(false);
     const alreadyFetched = useRef(false);
     const { showToast } = useToast();
+
+    const debouncedSearch = useDebounce(searchQuery, 800);
 
     const code = searchParams.get("code");
 
@@ -65,22 +67,19 @@ const CreateGroupPage = () => {
         }
     }, [code, projectId]);
 
-    // 🔍 Recherche d’utilisateurs GitHub
+    // 🔍 Recherche d’utilisateurs GitHub (avec debounce)
     useEffect(() => {
-        if (searchQuery.length < 2) {
+        const query = debouncedSearch.trim().replace("@", "");
+        if (query.length < 2) {
             setSearchResults([]);
             return;
         }
 
-        const timer = setTimeout(() => {
-            projectsAPI
-                .searchGithubUsers(projectId!, searchQuery)
-                .then((res) => setSearchResults(res.data))
-                .catch(() => setSearchResults([]));
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
+        projectsAPI
+            .searchGithubUsers(projectId!, query)
+            .then((res) => setSearchResults(res.data))
+            .catch(() => setSearchResults([]));
+    }, [debouncedSearch]);
 
     // 🧠 Sélection d’un utilisateur
     const handleSelectUser = (index: number, user: Student) => {
@@ -191,7 +190,6 @@ const CreateGroupPage = () => {
                     </button>
                 </div>
             )}
-
         </div>
     );
 };

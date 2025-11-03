@@ -1,37 +1,16 @@
 // backend/src/services/authService.ts
 import { AppDataSource } from "../data-source";
 import { Prof } from "../entity/Prof";
-import { Organization } from "../entity/Organization";
 import { encrypt } from "../utils/crypto";
 import { ENV } from "../config/env";
 import * as jwt from "jsonwebtoken";
-import fetch from "node-fetch";
-
-interface TokenResponse {
-    access_token?: string;
-    error?: string;
-}
-
-interface GithubUser {
-    id: number;
-    login: string;
-    name: string;
-    avatar_url: string;
-}
-
-interface GithubOrg {
-    login: string;
-    avatar_url: string;
-    public_repos?: number;
-    total_private_repos?: number;
-}
 
 /**
- * 🔹 Authentifie un prof via GitHub OAuth et synchronise ses organisations
+ * 🔹 Authentifie un prof via GitHub OAuth et met à jour ses infos de base
  */
 export async function handleGithubAuth(code: string) {
     // 1️⃣ Échange code OAuth ↔️ access_token GitHub
-    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+    const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
         body: new URLSearchParams({
@@ -41,78 +20,39 @@ export async function handleGithubAuth(code: string) {
         }),
     });
 
-    const tokenData = (await tokenResponse.json()) as TokenResponse;
-    if (!tokenData.access_token)
-        throw new Error(`Impossible d’obtenir un access_token GitHub : ${tokenData.error}`);
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) throw new Error("Impossible d’obtenir le token OAuth GitHub");
 
-    const userToken = tokenData.access_token;
+    const oauthToken = tokenData.access_token;
 
     // 2️⃣ Infos GitHub user
-    const userResponse = await fetch("https://api.github.com/user", {
-        headers: { Authorization: `Bearer ${userToken}` },
+    const userRes = await fetch("https://api.github.com/user", {
+        headers: { Authorization: `Bearer ${oauthToken}` },
     });
-    const userData = (await userResponse.json()) as GithubUser;
+    if (!userRes.ok) throw new Error("Erreur lors de la récupération du profil GitHub");
+
+    const userData = await userRes.json();
 
     // 3️⃣ Vérifie si le prof existe
     const userRepo = AppDataSource.getRepository(Prof);
-    let prof = await userRepo.findOneBy({ id: userData.id });
+    let prof = await userRepo.findOneBy({ login: userData.login });
     if (!prof) throw new Error("Accès refusé : prof non autorisé");
 
     // 4️⃣ Mise à jour infos + token chiffré
-    prof.login = userData.login;
     prof.name = userData.name;
     prof.avatar_url = userData.avatar_url;
-    prof.encryptedToken = encrypt(userToken);
+    prof.encryptedToken = encrypt(oauthToken);
     await userRepo.save(prof);
 
-    // 5️⃣ Synchronisation des organisations GitHub
-    const orgResponse = await fetch("https://api.github.com/user/orgs", {
-        headers: { Authorization: `Bearer ${userToken}` },
-    });
-
-    const orgsGithub = (await orgResponse.json()) as GithubOrg[];
-    const orgRepo = AppDataSource.getRepository(Organization);
-    const localOrgs = await orgRepo.find({ where: { ownerId: prof.id } });
-
-    const githubOrgNames = orgsGithub.map((o) => o.login);
-
-    for (const org of orgsGithub) {
-        const orgDetailResponse = await fetch(`https://api.github.com/orgs/${org.login}`, {
-            headers: { Authorization: `Bearer ${userToken}` },
-        });
-        const orgDetail = (await orgDetailResponse.json()) as GithubOrg;
-
-        const totalRepos = (orgDetail.public_repos || 0) + (orgDetail.total_private_repos || 0);
-        let existing = await orgRepo.findOneBy({ name: org.login, ownerId: prof.id });
-        if (!existing) {
-            existing = orgRepo.create({
-                name: org.login,
-                avatar_url: org.avatar_url,
-                public_repos: totalRepos,
-                ownerId: prof.id,
-            });
-        } else {
-            existing.avatar_url = org.avatar_url;
-            existing.public_repos = totalRepos;
-        }
-        await orgRepo.save(existing);
-    }
-
-    for (const local of localOrgs) {
-        if (!githubOrgNames.includes(local.name)) {
-            console.log(`🗑️ Suppression de ${local.name} (n'existe plus sur GitHub)`);
-            await orgRepo.remove(local);
-        }
-    }
-
-    console.log(`✅ SyncOrgs terminée : ${orgsGithub.length} organisations pour ${prof.login}`);
-
-    // 6️⃣ JWT de session local
+    // 5️⃣ JWT de session local
     const token = jwt.sign(
         { id: prof.id, login: prof.login, avatar_url: prof.avatar_url, name: prof.name },
         ENV.JWT_SECRET,
         { expiresIn: "2h", algorithm: "HS256" }
     );
 
-    return { token, user: { id: prof.id, login: prof.login, name: prof.name, avatar_url: prof.avatar_url } };
+    return {
+        token,
+        user: { id: prof.id, login: prof.login, name: prof.name, avatar_url: prof.avatar_url },
+    };
 }
