@@ -30,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = async () => {
         await authAPI.logout(); // supprime le cookie côté serveur
+        sessionStorage.removeItem("orgData");
         setUser(null);
         window.location.href = "/";
     };
