@@ -1,4 +1,3 @@
-// frontend/src/pages/OrgsPage/index.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authAPI } from "@api/auth";
@@ -88,7 +87,6 @@ const OrgsPage = () => {
 
                                 {/* Bouton dynamique selon l’état du projet */}
                                 <div className={styles.actionWrapper}>
-                                    {/* 👉 Si un projet existe ET qu’il a des groupes, on n’affiche rien */}
                                     {!org.projectExists || !org.hasGroups ? (
                                         <>
                                             {org.projectExists ? (
@@ -113,18 +111,20 @@ const OrgsPage = () => {
                                                 </button>
                                             )}
 
-                                            {/* Label d’action */}
                                             <span
                                                 className={
-                                                    org.projectExists ? styles.editLabel : styles.createLabel
+                                                    org.projectExists
+                                                        ? styles.editLabel
+                                                        : styles.createLabel
                                                 }
                                             >
-                                                    {org.projectExists ? "Modifier le projet" : "Créer un projet"}
+                                                {org.projectExists
+                                                    ? "Modifier le projet"
+                                                    : "Créer un projet"}
                                             </span>
                                         </>
                                     ) : null}
                                 </div>
-
                             </li>
                         ))
                     )}
