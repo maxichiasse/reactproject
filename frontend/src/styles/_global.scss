@@ -3,69 +3,75 @@
 @use "mixins" as *;
 
 /* === RESET GLOBAL === */
-body, html, #root {
+html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden; // ✅ empêche le scroll
   font-family: $font-main;
-  background-color: $background-light;
   color: $text-color;
+
+  // ✅ Dégradé global sur toute la page
+  background:
+          radial-gradient(1200px 600px at 20% -10%, rgba(99, 102, 241, 0.15), transparent 60%),
+          radial-gradient(900px 500px at 110% 10%, rgba(16, 185, 129, 0.12), transparent 60%),
+          linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,246,255,0.9));
+  background-attachment: fixed;
+  background-size: cover;
 }
 
-/* === HEADER === */
+/* === HEADER (glass + lisible) === */
 .global-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 80px;
-  background-color: $color-primary;
-  color: $color-white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  color: $text-color;
   z-index: 1000;
 
   @include flex-center(row);
   justify-content: space-between;
   padding: 0 2rem;
 
-  /* Logo + Titre */
   .header-logo-link {
     @include flex-center(row);
     gap: $space-s;
-    color: $color-white;
     text-decoration: none;
 
     .header-title {
-      color: $color-white;
+      color: #0f172a;
       font-size: 1.8rem;
       margin: 0;
+      font-weight: 700;
     }
 
     .header-logo {
       height: 40px;
       transition: transform 0.2s ease;
-
-      &:hover {
-        transform: scale(1.1);
-      }
+      &:hover { transform: scale(1.1); }
     }
   }
 }
 
-/* === FOOTER === */
+/* === FOOTER (glass + centré + lisible) === */
 .global-footer {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 40px;
-  background-color: $color-primary;
-  color: $color-white;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+  color: #334155;
   font-size: 0.9rem;
-  box-shadow: 0 -1px 4px rgba(0,0,0,0.05);
+  z-index: 900;
 
   @include flex-center(row);
   text-align: center;
@@ -73,9 +79,11 @@ body, html, #root {
 
 /* === CONTENU PRINCIPAL === */
 .main-content {
-  padding-top: 80px;  // espace sous le header
+  padding-top: 80px;   // espace sous le header
   padding-bottom: 40px; // espace au-dessus du footer
-  min-height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  height: calc(100vh - 120px);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

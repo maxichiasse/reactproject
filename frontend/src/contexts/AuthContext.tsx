@@ -21,28 +21,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         console.log("🔄 AuthContext mount...");
         const cached = sessionStorage.getItem("user");
-
         if (cached) {
-            const parsed = JSON.parse(cached);
-            console.log("🧠 Utilisateur trouvé en cache:", parsed.login);
-            setUser(parsed);
-            setLoading(false);
-            return;
+            try {
+                const parsed = JSON.parse(cached);
+                console.log("🧠 Utilisateur trouvé en cache:", parsed.login);
+                setUser(parsed);
+            } catch {
+                console.warn("⚠️ Cache user invalide, suppression.");
+                sessionStorage.removeItem("user");
+            }
         }
 
-
-
+        // ✅ Toujours vérifier l'état réel côté serveur
         console.log("📡 Vérification utilisateur via /api/me...");
         authAPI
             .me()
             .then((res) => {
                 console.log("✅ /api/me success:", res.data);
-                setUser(res.data);
-                sessionStorage.setItem("user", JSON.stringify(res.data));
+                if (res.data && res.data.login) {
+                    setUser(res.data);
+                    sessionStorage.setItem("user", JSON.stringify(res.data));
+                } else {
+                    setUser(null);
+                    sessionStorage.removeItem("user");
+                }
             })
             .catch((err) => {
                 console.error("❌ /api/me error:", err);
                 setUser(null);
+                sessionStorage.removeItem("user");
             })
             .finally(() => {
                 console.log("🏁 AuthContext loading = false");
@@ -50,22 +57,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
     }, []);
 
-
+    // ✅ Logout propre et total
     const logout = async () => {
         try {
-            await authAPI.logout();
-        } catch (e) {
-            console.warn("⚠️ Erreur logout API:", e);
+            await authAPI.logout(); // supprime cookie JWT
+        } catch {
+            /* ignore */
         }
 
-        // 🧹 Nettoyer toute la session avant le reload
-        sessionStorage.clear(); // ✅ vide TOUTES les clés de la session
+        console.log("🧹 Nettoyage complet de la session côté frontend...");
+        sessionStorage.clear();
+        localStorage.removeItem("orgData");
+
+        // Reset immédiat du state
         setUser(null);
 
-        console.log("✅ Session nettoyée, redirection...");
-        setTimeout(() => {
-            window.location.href = "/";
-        }, 100);
+        // Re-rendu + redirection propre
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        window.location.replace("/");
     };
 
     return (

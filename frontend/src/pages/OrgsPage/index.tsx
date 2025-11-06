@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authAPI } from "@api/auth";
-import type { User } from "types/User";
 import styles from "./OrgsPage.module.scss";
 import { useOrgs } from "@contexts/OrgsContext";
+import {useAuth} from "@hooks/useAuth.ts";
 
 const handleLogout = async () => {
     await authAPI.logout();
@@ -12,15 +11,10 @@ const handleLogout = async () => {
 
 const OrgsPage = () => {
     const { orgs, loading } = useOrgs();
-    const [user, setUser] = useState<User | null>(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        authAPI
-            .me()
-            .then((res) => setUser(res.data))
-            .catch(() => setUser(null));
-    }, []);
+    const { user } = useAuth();
+
 
     if (loading) {
         return (
