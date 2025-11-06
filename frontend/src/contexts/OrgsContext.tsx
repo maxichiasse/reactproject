@@ -1,12 +1,5 @@
-//frontend/src/contexts/OrgsContext.tsx
-import React, {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    type ReactNode,
-    useRef
-} from "react";
+// frontend/src/contexts/OrgsContext.tsx
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { orgsAPI } from "@api/orgs";
 import { useToast } from "@contexts/ToastContext";
 import { useAuth } from "@contexts/AuthContext";
@@ -27,18 +20,16 @@ interface OrgsContextType {
 
 const OrgsContext = createContext<OrgsContextType | undefined>(undefined);
 
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
-const cacheKeyFor = (userId: number) => `orgData:${userId}`;
-
 export const OrgsProvider = ({ children }: { children: ReactNode }) => {
     const [orgs, setOrgs] = useState<ExtendedOrganization[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { showToast } = useToast();
     const { user, loading: authLoading } = useAuth();
-    const hydratedRef = useRef(false);
 
-    // 🧩 Charge les organisations depuis le serveur
+    /**
+     * 🔁 Récupère les organisations depuis l’API
+     */
     const fetchOrgs = async () => {
         try {
             setLoading(true);
@@ -47,14 +38,11 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
             const res = await orgsAPI.getAllWithRepoCount();
             const newOrgs: ExtendedOrganization[] = Array.isArray(res.data) ? res.data : [];
 
-            if (user?.id) {
-                sessionStorage.setItem(
-                    cacheKeyFor(user.id),
-                    JSON.stringify({ ts: Date.now(), data: newOrgs })
-                );
-            }
+            // 🧠 Cache en sessionStorage pour accélérer les prochaines visites
+            sessionStorage.setItem("orgData", JSON.stringify(newOrgs));
+            sessionStorage.setItem("orgs_lastUpdate", Date.now().toString());
             setOrgs(newOrgs);
-            showToast("✅ Organisations mises à jour", "success");
+
         } catch (err: any) {
             console.error("❌ Erreur chargement orgs:", err.message);
             setError("Impossible de récupérer les organisations");
@@ -63,51 +51,53 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    // 🧠 Hydrate depuis le cache si disponible et récent
-    const hydrateFromCacheIfPossible = (): boolean => {
-        if (!user?.id) return false;
-        const raw = sessionStorage.getItem(cacheKeyFor(user.id));
-        if (!raw) return false;
-
-        try {
-            const parsed = JSON.parse(raw) as { ts: number; data: ExtendedOrganization[] };
-            const fresh = Date.now() - parsed.ts < CACHE_TTL_MS;
-            setOrgs(parsed.data || []);
-            hydratedRef.current = true;
-            console.log(fresh ? "💾 Orgs chargées depuis cache (frais)" : "🕓 Cache expiré");
-            return fresh;
-        } catch {
-            console.warn("⚠️ Cache orgs invalide, suppression.");
-            sessionStorage.removeItem(cacheKeyFor(user.id));
-            return false;
-        }
+    /**
+     * 🧹 Supprime le cache
+     */
+    const clearOrgs = () => {
+        setOrgs([]);
+        sessionStorage.removeItem("orgData");
+        sessionStorage.removeItem("orgs_lastUpdate");
     };
 
+    /**
+     * 🎯 Effet principal — logique TTL + détection de refresh
+     */
     useEffect(() => {
-        if (authLoading) return;
+        console.log("👀 OrgsContext déclenché", { authLoading, user });
 
+        if (authLoading) return;
         if (!user) {
-            console.log("🧹 Aucun utilisateur -> clearOrgs()");
-            hydratedRef.current = false;
-            setOrgs([]);
+            clearOrgs();
             return;
         }
 
-        // 1️⃣ Essaye d’hydrater le cache
-        const fresh = hydrateFromCacheIfPossible();
+        const cachedData = sessionStorage.getItem("orgData");
+        const lastUpdate = Number(sessionStorage.getItem("orgs_lastUpdate") || 0);
+        const ttl = 60 * 1000; // 1 minute de cache
+        const isExpired = Date.now() - lastUpdate > ttl;
 
-        // 2️⃣ Si pas frais → fetch depuis le serveur
-        if (!fresh) {
-            console.log("🌐 Cache manquant ou expiré → fetchOrgs()");
+        // ⚡ 1️⃣ Si c’est un “hard reload” (F5 ou Ctrl+R), on refait fetchOrgs
+        const navType = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+        const isReload = navType?.type === "reload";
+
+        if (isReload) {
+            console.log("🔄 Reload détecté → fetchOrgs forcé");
             fetchOrgs();
+            return;
         }
-    }, [authLoading, user?.id]); // 👈 déclenche uniquement quand l’utilisateur change
 
-    // 🧹 Nettoyer les orgs
-    const clearOrgs = () => {
-        setOrgs([]);
-        hydratedRef.current = false;
-    };
+        // ⚡ 2️⃣ Si cache existant + pas expiré → on l’utilise
+        if (cachedData && !isExpired) {
+            console.log("📦 Utilisation du cache orgData");
+            setOrgs(JSON.parse(cachedData));
+            return;
+        }
+
+        // ⚡ 3️⃣ Sinon → requête API
+        console.log("🌐 fetchOrgs (pas de cache valide)");
+        fetchOrgs();
+    }, [authLoading, user?.login]);
 
     return (
         <OrgsContext.Provider value={{ orgs, loading, error, refreshOrgs: fetchOrgs, clearOrgs }}>

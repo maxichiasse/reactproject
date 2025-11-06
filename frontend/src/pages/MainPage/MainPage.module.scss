@@ -1,5 +1,6 @@
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
+@use "../../styles/global" as *;
 
 .container {
   position: relative;
@@ -9,10 +10,7 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background:
-          radial-gradient(1200px 600px at 20% -10%, rgba(99, 102, 241, 0.15), transparent 60%),
-          radial-gradient(900px 500px at 110% 10%, rgba(16, 185, 129, 0.12), transparent 60%),
-          linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,246,255,0.9));
+
 }
 
 /* === Blobs animés === */
@@ -124,13 +122,4 @@
   }
 }
 
-/* === 🌈 Étendre le fond et supprimer la barre de scroll === */
-:global(body) {
-  overflow: hidden; // ✅ empêche le scroll
-  background:
-          radial-gradient(1200px 600px at 20% -10%, rgba(99, 102, 241, 0.15), transparent 60%),
-          radial-gradient(900px 500px at 110% 10%, rgba(16, 185, 129, 0.12), transparent 60%),
-          linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,246,255,0.9)) !important;
-  background-attachment: fixed;
-  background-size: cover;
-}
+

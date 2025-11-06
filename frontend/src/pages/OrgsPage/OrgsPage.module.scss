@@ -4,94 +4,155 @@
 
 .container {
   width: 100%;
-  padding: calc($space-s + 10px) $space-m calc($space-s + 40px); // ✅ espace sous header + au-dessus footer
+  min-height: calc(110vh - 110px);
+  padding: 85px $space-xl 60px; // ⬆️ augmenté de 40 → 60 pour créer un petit espace en bas
   display: flex;
   flex-direction: column;
-  gap: $space-l;
+  align-items: center;
+  gap: $space-m;
+  box-sizing: border-box;
 
-  /* ✅ Scroll vertical uniquement si nécessaire */
+  /* ✅ Scroll vertical propre */
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: calc(100vh - 120px); // 80px header + 40px footer
-  box-sizing: border-box; // ✅ évite que le padding crée un dépassement
+  scroll-behavior: smooth;
+
+  /* ✅ Scrollbar fine */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 100, 100, 0.3) transparent;
 }
 
-
+/* 🔝 Barre supérieure */
 .topBar {
-  @include flex-center(row, space-between);
-  flex-wrap: wrap;
-  gap: 1rem;
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0 $space-l;
+  margin-bottom: $space-s;
+  flex-shrink: 0;
 
   .userInfo {
-    @include flex-center(row);
-    gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
 
-    .greeting { font-size: 1.5rem; font-weight: 500; }
-    .avatar { width: 50px; height: 50px; border-radius: 50%; }
+    .greeting {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #1e293b;
+      white-space: nowrap;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
   }
 
   .logoutButton {
     @include button-base($color-muted, darken($color-muted, 10%));
-    font-size: 0.9rem;
-    padding: 0.5rem 1.2rem;
-    margin-right: $space-s;
+    font-size: 0.95rem;
+    padding: 0.5rem 1.3rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
   }
 }
 
+/* 🏢 Organisations */
 .orgSection {
   width: 100%;
   max-width: 900px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -5px;
+  flex-grow: 1;
 
   .orgTitle {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    font-weight: 700;
     margin-bottom: $space-m;
-    font-weight: bold;
     text-align: center;
+    color: #1f2937;
+    flex-shrink: 0;
   }
 
   .orgList {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: $space-m;
     list-style: none;
     padding: 0;
+    margin: 0;
+
+    /* ✅ Ajout : petit espace de fin pour ne pas coller au footer */
+    padding-bottom: 40px;
 
     .orgCard {
       @include card(1rem);
-      position: relative;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       cursor: pointer;
       transition: background-color 0.2s ease;
-      &:hover { background-color: #f3f3f3;
+      flex-shrink: 0;
+
+      &:hover {
+        background-color: #f3f3f3;
       }
 
-      .orgAvatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 1rem; }
-      .orgInfo { display: flex; flex-direction: column; gap: 4px; }
-      .orgName { font-weight: 600; font-size: 16px; }
-      .repoCount { font-size: 13px; color: $text-light; }
+      .orgAvatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 1rem;
+      }
 
-      .addButton, .editButton {
-        position: absolute;
-        right: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
+      .orgInfo {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .orgName {
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .repoCount {
+        font-size: 13px;
+        color: $text-light;
+      }
+
+      .actionWrapper {
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+
+      .addButton,
+      .editButton {
         @include button-base($color-muted, darken($color-muted, 10%));
         border-radius: 50%;
         width: 32px;
         height: 32px;
         font-size: 18px;
         padding: 0;
-        &:hover {
-          transform: translateY(-50%);
-        }
       }
 
-      .createLabel, .editLabel {
+      .createLabel,
+      .editLabel {
         position: absolute;
-        right: 1rem;
+        right: 0;
         bottom: 100%;
         margin-bottom: 6px;
         background-color: $color-muted;
@@ -108,9 +169,16 @@
         display: block;
       }
     }
+
+    .emptyMsg {
+      text-align: center;
+      font-size: 1rem;
+      color: $text-light;
+    }
   }
 }
 
+/* ✏️ Bouton édition spécifique */
 .editButton {
   background-color: #ffb400;
   color: white;
@@ -121,8 +189,107 @@
   font-size: 18px;
   padding: 0;
   cursor: pointer;
+
   &:hover {
     background-color: darken(#ffb400, 10%);
   }
 }
 
+/* ========= Responsive ========= */
+
+/* ≤ 1024px : resserrer les marges et la largeur max */
+@media (max-width: 1024px) {
+  .container {
+    padding: 85px 24px 60px;
+  }
+  .topBar {
+    max-width: 100%;
+    padding: 0 8px;
+  }
+  .orgSection {
+    max-width: 760px;
+  }
+}
+
+/* ≤ 768px : pile le header d’orga et agrandit les cibles tactiles */
+@media (max-width: 768px) {
+  .topBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 0 4px;
+    margin-bottom: 8px;
+
+    .userInfo {
+      .greeting { font-size: 1.3rem; }
+      .avatar { width: 44px; height: 44px; }
+    }
+
+    .logoutButton {
+      align-self: flex-end;
+      margin-right: 0;
+      padding: 0.55rem 1.1rem;
+    }
+  }
+
+  .orgSection {
+    max-width: 620px;
+
+    .orgTitle {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .orgList {
+      gap: 10px;
+
+      .orgCard {
+        padding: 12px;
+        .orgAvatar { width: 34px; height: 34px; margin-right: 12px; }
+        .orgName { font-size: 15px; }
+        .repoCount { font-size: 12px; }
+        .addButton, .editButton { width: 36px; height: 36px; font-size: 18px; }
+      }
+    }
+  }
+}
+
+/* ≤ 480px : layout très compact, 1 colonne fluide */
+@media (max-width: 480px) {
+  .container {
+    padding: 82px 12px 64px;
+    max-height: calc(100vh - 120px);
+  }
+
+  .topBar {
+    .userInfo {
+      gap: 8px;
+      .greeting { font-size: 1.15rem; }
+      .avatar { width: 40px; height: 40px; }
+    }
+    .logoutButton {
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+    }
+  }
+
+  .orgSection {
+    max-width: 100%;
+    margin-top: 0;
+
+    .orgList {
+      .orgCard {
+        gap: 10px;
+
+        /* Option: stack le nom + compte si l’espace manque */
+        .orgInfo {
+          min-width: 0; /* éviter overflow */
+        }
+
+        .addButton, .editButton {
+          width: 34px; height: 34px; font-size: 16px;
+        }
+      }
+    }
+  }
+}
