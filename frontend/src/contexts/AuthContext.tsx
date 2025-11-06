@@ -23,43 +23,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const cached = sessionStorage.getItem("user");
 
         if (cached) {
-            console.log("🧠 Utilisateur trouvé en cache:", JSON.parse(cached).login);
-            setUser(JSON.parse(cached));
+            const parsed = JSON.parse(cached);
+            console.log("🧠 Utilisateur trouvé en cache:", parsed.login);
+            setUser(parsed);
             setLoading(false);
             return;
         }
 
-        const hasToken = document.cookie.includes("token=");
-        console.log("🍪 Token présent:", hasToken);
 
-        if (!hasToken) {
-            console.log("🚫 Aucun token -> utilisateur non connecté");
-            setLoading(false);
-            return;
-        }
 
         console.log("📡 Vérification utilisateur via /api/me...");
         authAPI
             .me()
             .then((res) => {
-                console.log("✅ Auth OK:", res.data.login);
+                console.log("✅ /api/me success:", res.data);
                 setUser(res.data);
                 sessionStorage.setItem("user", JSON.stringify(res.data));
             })
-            .catch(() => {
-                console.error("❌ Erreur /api/me");
+            .catch((err) => {
+                console.error("❌ /api/me error:", err);
                 setUser(null);
             })
-            .finally(() => setLoading(false));
+            .finally(() => {
+                console.log("🏁 AuthContext loading = false");
+                setLoading(false);
+            });
     }, []);
 
 
     const logout = async () => {
-        await authAPI.logout(); // supprime le cookie côté serveur
-        sessionStorage.removeItem("orgData");
-        sessionStorage.removeItem("user");
+        try {
+            await authAPI.logout();
+        } catch (e) {
+            console.warn("⚠️ Erreur logout API:", e);
+        }
+
+        // 🧹 Nettoyer toute la session avant le reload
+        sessionStorage.clear(); // ✅ vide TOUTES les clés de la session
         setUser(null);
-        window.location.href = "/";
+
+        console.log("✅ Session nettoyée, redirection...");
+        setTimeout(() => {
+            window.location.href = "/";
+        }, 100);
     };
 
     return (

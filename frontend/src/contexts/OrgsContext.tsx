@@ -48,16 +48,20 @@ export const OrgsProvider = ({ children }: { children: ReactNode }) => {
     };
 
     useEffect(() => {
-        console.log("👀 useEffect OrgsContext déclenché", { authLoading, user });
+        console.log("👀 OrgsContext useEffect déclenché", { authLoading, user });
+
         if (authLoading) return;
-        if (user) {
-            console.log("➡️ Fetch des organisations...");
-            fetchOrgs();
-        } else {
-            console.log("🧹 Pas de user -> clearOrgs()");
-            setOrgs([]);
+
+        if (!user) {
+            console.log("🧹 Aucun user détecté -> clearOrgs()");
+            clearOrgs();
+            return;
         }
-    }, [user, authLoading]);
+
+        console.log("✅ Auth terminée et user défini -> fetchOrgs()");
+        fetchOrgs();
+    }, [authLoading, user?.login]); // 👈 déclenche quand le login change
+
 
 
     const clearOrgs = () => {
