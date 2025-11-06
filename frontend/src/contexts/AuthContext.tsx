@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+//frontend/src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { authAPI } from "@api/auth";
 import type { User } from "types/User";
 
@@ -17,9 +18,14 @@ export const AuthContext = createContext<AuthContextProps>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const didInit = useRef(false); // ✅ évite les doubles appels en dev strict mode
 
     useEffect(() => {
+        if (didInit.current) return;
+        didInit.current = true;
+
         console.log("🔄 AuthContext mount...");
+
         const cached = sessionStorage.getItem("user");
         if (cached) {
             try {
@@ -27,21 +33,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.log("🧠 Utilisateur trouvé en cache:", parsed.login);
                 setUser(parsed);
             } catch {
-                console.warn("⚠️ Cache user invalide, suppression.");
+                console.warn("⚠️ Cache utilisateur corrompu, suppression.");
                 sessionStorage.removeItem("user");
             }
         }
 
-        // ✅ Toujours vérifier l'état réel côté serveur
         console.log("📡 Vérification utilisateur via /api/me...");
         authAPI
             .me()
             .then((res) => {
-                console.log("✅ /api/me success:", res.data);
                 if (res.data && res.data.login) {
+                    console.log("✅ /api/me success:", res.data.login);
                     setUser(res.data);
                     sessionStorage.setItem("user", JSON.stringify(res.data));
                 } else {
+                    console.log("🚫 Aucun utilisateur connecté.");
                     setUser(null);
                     sessionStorage.removeItem("user");
                 }
@@ -57,10 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
     }, []);
 
-    // ✅ Logout propre et total
+    // ✅ Logout complet et immédiat
     const logout = async () => {
         try {
-            await authAPI.logout(); // supprime cookie JWT
+            await authAPI.logout();
         } catch {
             /* ignore */
         }
@@ -69,10 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sessionStorage.clear();
         localStorage.removeItem("orgData");
 
-        // Reset immédiat du state
         setUser(null);
 
-        // Re-rendu + redirection propre
         await new Promise((resolve) => setTimeout(resolve, 150));
         window.location.replace("/");
     };
