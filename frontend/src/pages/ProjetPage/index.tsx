@@ -84,17 +84,17 @@ const ProjetPage = () => {
     if (loading) return <p className={styles.loading}>Chargement du projet...</p>;
 
     return (
-        <div className={styles.pageWrapper}>
-            {/* 🔙 Bouton retour */}
+        <>
+            {/* 🔙 Bouton retour global */}
             <button className={styles.backButton} onClick={() => navigate("/orgs")}>
                 ⬅ Retour
             </button>
 
-            {/* 🧱 Bloc central */}
-            <div className={styles.container}>
-                <h1>
-                    {form.id ? "Modifier le projet" : "Créer un projet"} pour {orgName}
-                </h1>
+            <div className={styles.pageWrapper}>
+                <div className={styles.container}>
+                    <h1>
+                        {form.id ? "Modifier le projet" : "Créer un projet"} pour {orgName}
+                    </h1>
 
                 <form className={styles.form} onSubmit={handleSubmit}>
                     <label>
@@ -146,6 +146,8 @@ const ProjetPage = () => {
                 </form>
             </div>
         </div>
+        </>
+
     );
 };
 

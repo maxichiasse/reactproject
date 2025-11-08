@@ -4,39 +4,71 @@
 
 .pageWrapper {
   position: relative;
-  min-height: 90vh;
-  @include flex-center(column);
-  background-color: #f5f6f8;
+  min-height: calc(100vh - 120px); // hauteur totale dispo (en retirant header + footer)
+  display: flex;
+  align-items: center; // ✅ centre verticalement le container
+  justify-content: center; // ✅ centre horizontalement aussi
+  background: transparent;
+  padding: 0 1rem; // petite marge latérale responsive
 }
+
 
 .backButton {
   @include button-base($color-muted, darken($color-muted, 10%));
+  position: fixed; // ✅ indépendant de la pageWrapper
+  top: 100px; // juste sous le header
+  left: clamp(1.5rem, 3vw, 3rem);
+  z-index: 1000;
+
   font-size: 0.9rem;
-  padding: 0.4rem 1rem;
-  margin-bottom: $space-l;
-  align-self: flex-start;
-  margin-left: $space-xl;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
   border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 0.4rem;
 
+  background: rgba(255, 255, 255, 0.85);
+  color: #1e293b;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  transition: all 0.2s ease;
+
   &:hover {
-    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 
+
+/* 📦 Carte du formulaire */
 .container {
   @include card(2rem);
   max-width: 600px;
-  width: 100%;
-  margin: $space-l auto;
-  transform: translateY(-40px);
-
+  width: 90%;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+  box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.06),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  transform: translateY(-20px);
+  position: relative;
+  z-index: 1;
 
   h1 {
     margin-bottom: $space-l;
     text-align: center;
+    font-weight: 700;
+    color: #1e293b;
   }
 
   .form {
@@ -47,16 +79,26 @@
     label {
       display: flex;
       flex-direction: column;
-      font-weight: bold;
+      font-weight: 600;
+      color: #334155;
 
       input {
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 6px;
+        padding: 0.6rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
         margin-top: 0.5rem;
+        font-size: 0.95rem;
+        background: rgba(255, 255, 255, 0.8);
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #6366f1;
+          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
 
         &.readonlyInput {
-          background-color: #f0f0f0;
+          background-color: rgba(240, 240, 240, 0.6);
           color: $text-light;
           cursor: not-allowed;
         }
@@ -66,7 +108,32 @@
     .submitButton {
       @include button-base($color-primary, $color-accent);
       margin-top: $space-m;
-    }
+      font-weight: 600;
+      padding: 0.8rem 1.4rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      }
+    }
   }
 }
+
+/* 🌀 Responsive */
+@media (max-width: 768px) {
+  .pageWrapper {
+    padding-top: 80px;
+  }
+
+  .container {
+    width: 92%;
+    padding: 1.5rem;
+  }
+
+  .backButton {
+    margin-left: 1rem;
+  }
+}
+

@@ -110,3 +110,54 @@ body::before {
   justify-content: center;
   align-items: center;
 }
+
+/* === BLOBS GLOBAUX ANIMÉS === */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* reste derrière tout le contenu */
+  pointer-events: none; /* ne gêne pas les clics */
+  overflow: hidden;
+}
+
+/* conteneur invisible des blobs */
+body::after {
+  background: none;
+}
+
+/* Les blobs eux-mêmes */
+.blobA,
+.blobB {
+  position: fixed;
+  width: 520px;
+  height: 520px;
+  filter: blur(70px);
+  opacity: 0.4;
+  border-radius: 50%;
+  animation: float 16s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -2; /* derrière le gradient */
+}
+
+.blobA {
+  top: -120px;
+  left: -100px;
+  background: #6366f1;
+}
+
+.blobB {
+  bottom: -150px;
+  right: -120px;
+  background: #10b981;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  50%      { transform: translateY(-15px) translateX(10px) scale(1.05); }
+}
+

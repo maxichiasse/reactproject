@@ -1,159 +1,295 @@
-/* frontend/src/pages/CreateGroupPage/CreateGroupPage.module.css */
-.container {
+/* src/pages/CreateGroupPage/CreateGroup.module.scss */
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+/* hauteur header + footer = 120px (80 + 40) */
+$hf: 120px;
+$page-block-pad: clamp(40px, 6vh, 72px);
+
+/* === PAGE WRAPPER (scroll si besoin) === */
+.pageWrapper {
+  height: calc(100vh - #{$hf});
+  max-height: calc(100vh - #{$hf});
+  width: 100%;
+  box-sizing: border-box;
+
+  /* marges sup/inf garanties */
+  padding-block: $page-block-pad;
+  padding-inline: clamp(16px, 3vw, 24px);
+
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 2rem;
-  background: #f7f8fa;
-  min-height: 100vh;
-  color: #222;
+  justify-content: center;
+  align-items: flex-start;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+  }
 }
 
-.loading {
+/* === CONTAINER (carte centrale) === */
+.container {
+  @include card(2rem);
+  width: 100%;
+  max-width: 650px;
+  padding: 2.2rem clamp(1.5rem, 4vw, 3rem);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 20px;
+  box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.06),
+          inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
   text-align: center;
-  font-size: 1.2rem;
-  padding-top: 3rem;
+  animation: fadeInUp 0.6s ease both;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === TITRE / INFOS === */
 h1 {
-  color: #24292e;
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  color: #0f172a;
+  font-size: clamp(1.8rem, 2vw + 1rem, 2.2rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
 }
 
 .projectInfo {
-  font-size: 1rem;
-  margin: 0.3rem 0;
+  font-size: 1.05rem;
+  margin: 0.4rem 0;
+  color: #334155;
 }
 
+/* === BOUTON AUTORISER GITHUB === */
 .authButton {
-  background-color: #24292e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.8rem 1.5rem;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1.2rem;
-  transition: background 0.2s;
+  @include button-base(#111827, #0ea5e9);
+  font-weight: 600;
+  padding: 0.9rem 1.6rem;
+  border-radius: 10px;
+  width: fit-content;
+  margin: 1.2rem auto 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+  }
 }
 
-.authButton:hover {
-  background-color: #0366d6;
-}
-
+/* === FORMULAIRE === */
 .form {
   margin-top: 2rem;
-  width: 100%;
-  max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  width: 100%;
 }
 
-.labelRow {
-  display: flex;
-  justify-content: center;
-}
-
-.userBox {
+/* === CHAMPS D’ÉTUDIANTS === */
+.searchContainer {
+  position: relative;
+  width: calc(100% - 2rem);
+  margin: 0 auto;
+  box-sizing: border-box; // ✅ pour alignement exact avec .userBox
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.6rem;
-  background: white;
-  padding: 0.6rem 1rem;
-  border-radius: 10px;
-  width: 100%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.userBox img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-.userBox span {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #24292e;
 }
 
 .input {
+  display: block;
   width: 100%;
-  padding: 0.6rem 1rem;
+  padding: 0.9rem 1.2rem;
   border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
 }
 
-.input:focus {
-  outline: none;
-  border-color: #0366d6;
-  box-shadow: 0 0 4px rgba(3, 102, 214, 0.3);
-}
-
-.searchContainer {
-  position: relative;
-  width: 100%;
-}
-
+/* === DROPDOWN DE RECHERCHE === */
 .dropdown {
   position: absolute;
-  top: 105%;
+  top: 110%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
   list-style: none;
   margin: 4px 0 0;
   padding: 0;
-  z-index: 50;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   max-height: 180px;
   overflow-y: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba(240, 240, 255, 0.7);
+    }
+
+    img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    span {
+      font-size: 0.95rem;
+      color: #111827;
+    }
+  }
 }
 
-.dropdown li {
+/* === UTILISATEUR CONNECTÉ === */
+.userBox {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.8rem;
-  cursor: pointer;
-  transition: background 0.15s;
+  gap: 0.8rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  width: calc(100% - 2rem);
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #24292e;
+    word-break: break-word;
+  }
+
+  /* === BOUTON SUPPRESSION AMÉLIORÉ === */
+  .removeBtn {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    border: none;
+    background: rgba(220, 38, 38, 0.07);
+    color: #dc2626;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 6px 9px;
+    border-radius: 8px;
+    line-height: 1;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgba(220, 38, 38, 0.15);
+      transform: translateY(-50%) scale(1.1);
+      color: #b91c1c;
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
 }
 
-.dropdown li:hover {
-  background: #f6f8fa;
-}
-
-.dropdown img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-}
-
+/* === BOUTON CRÉER LE GROUPE === */
 .createButton {
-  margin-top: 2rem;
-  padding: 0.8rem 1.5rem;
-  background: #2ea44f;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
+  @include button-base($color-success, darken($color-success, 10%));
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  width: calc(100% - 2rem);
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  &:disabled {
+    background: #94d3a2;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 }
 
-.createButton:hover {
-  background: #2c974b;
-}
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .container {
+    max-width: 92%;
+    padding: 1.5rem;
+  }
 
-.createButton:disabled {
-  background: #94d3a2;
-  cursor: not-allowed;
+  .input,
+  .userBox,
+  .createButton,
+  .searchContainer {
+    width: calc(100% - 1rem);
+  }
+
+  .userBox img {
+    width: 35px;
+    height: 35px;
+  }
+
+  .userBox .removeBtn {
+    right: 8px;
+    font-size: 0.9rem;
+    padding: 5px 8px;
+  }
 }

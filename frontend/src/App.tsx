@@ -15,6 +15,8 @@ function App() {
     return (
         <>
             <Header />
+            <div className="blobA"></div>
+            <div className="blobB"></div>
             <main className="main-content">
                 <Routes>
                     <Route path="/" element={<MainPage />} />
