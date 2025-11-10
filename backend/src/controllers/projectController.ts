@@ -6,6 +6,7 @@ import { createProject } from "../services/projectService";
 import { AppDataSource } from "../data-source";
 import { Project } from "../entity/Project";
 import { Organization } from "../entity/Organization";
+import {ENV} from "../config/env";
 
 /**
  * ➕ Crée un projet pour une organisation donnée
@@ -28,7 +29,7 @@ export const createProjectController = async (req: AuthRequest, res: Response) =
 
         res.status(201).json({
             ...project,
-            joinUrl: `http://localhost:5173/CreateGroup/${project.id}/${project.secretKey}`,
+            joinUrl: `${ENV.FRONT_URL}/CreateGroup/${project.id}/${project.secretKey}`,
         });
     } catch (err: any) {
         console.error("Erreur création projet:", err);

@@ -1,4 +1,6 @@
 //backend/src/config/env.ts
+
+import 'dotenv/config'
 function required(name: string): string {
     const value = process.env[name];
     if (!value) throw new Error(`❌ Variable d'environnement manquante : ${name}`);
@@ -13,13 +15,11 @@ export const ENV = {
     ENCRYPTION_KEY: required("ENCRYPTION_KEY"),
     TOKEN_SECRET: required("TOKEN_SECRET"),
 
-    FRONT_URL:
-        process.env.NODE_ENV === "production"
-            ? "https://githelper.up.railway.app"
-            : "http://localhost:5173",
-
+    FRONT_URL: required("FRONT_URL"),
 };
 
 console.log("🌍 Environnement :", process.env.NODE_ENV);
 console.log("📁 Base MySQL :", process.env.MYSQLHOST);
+console.log("🔗 Front URL :", ENV.FRONT_URL);
+
 
