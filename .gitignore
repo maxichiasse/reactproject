@@ -21,6 +21,7 @@ lerna-debug.log*
 # Fichiers d'environnement (ne jamais commit)
 .env
 .env.*
+*.env*
 *.local
 *.production
 
