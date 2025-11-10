@@ -146,20 +146,59 @@ export const organizationService = {
         const decryptedPAT = decrypt(prof.encryptedToken);
         const projectRepo = AppDataSource.getRepository(Project);
 
+        // 🔹 Récupère le projet local lié à cette organisation (PostgreSQL)
         const project = await projectRepo.findOne({
             where: { organization: { name: orgName }, owner: { id: prof.id } },
             relations: ["groups"],
         });
 
+        // 🔹 Récupère les repos GitHub
         const repos = await this.getOrganizationRepos(prof, orgName);
 
-        const simplified = repos.map((r: any) => ({
-            id: r.id,
-            name: r.name,
-            description: r.description || "Pas de description",
-            html_url: r.html_url,
-        }));
+        // 🧠 Pour chaque repo → on ajoute les collaborateurs (étudiants)
+        const enrichedRepos = await Promise.all(
+            repos.map(async (repo: any) => {
+                try {
+                    // Appel API GitHub pour les collaborateurs
+                    const collaborators = await githubFetch(
+                        `/repos/${orgName}/${repo.name}/collaborators`,
+                        decryptedPAT
+                    );
 
-        return { organization: orgName, project: project || null, repositories: simplified };
+                    // Filtrer pour exclure le prof (owner)
+                    const members = collaborators
+                        .filter(
+                            (user: any) =>
+                                user.login.toLowerCase() !==
+                                repo.owner.login.toLowerCase()
+                        )
+                        .map((user: any) => ({
+                            login: user.login,
+                            avatar_url: user.avatar_url,
+                            html_url: user.html_url,
+                        }));
+
+                    return {
+                        id: repo.id,
+                        name: repo.name,
+                        description: repo.description || "Pas de description",
+                        html_url: repo.html_url,
+                        members,
+                    };
+                } catch (err: any) {
+                    console.warn(`⚠️ Impossible de charger les collaborateurs pour ${repo.name}`);
+                    return {
+                        id: repo.id,
+                        name: repo.name,
+                        description: repo.description || "Pas de description",
+                        html_url: repo.html_url,
+                        members: [],
+                    };
+                }
+            })
+        );
+
+        return { organization: orgName, project: project || null, repositories: enrichedRepos };
     },
+
 };

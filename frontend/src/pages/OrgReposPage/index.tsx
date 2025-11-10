@@ -63,7 +63,9 @@ const OrgReposPage = () => {
             {project ? (
                 <div className={styles.projectCard}>
                     <h2>📑 Projet</h2>
-                    <p><b>Clé secrète :</b> {project.secretKey}</p>
+                    <p>
+                        <b>Clé secrète :</b> {project.secretKey}
+                    </p>
 
                     {/* ✅ Lien d’inscription affiché proprement avec icône de copie */}
                     {(() => {
@@ -92,11 +94,17 @@ const OrgReposPage = () => {
                         );
                     })()}
 
-                    <p><b>Étudiants :</b> {project.minStudents} - {project.maxStudents}</p>
-                    <p><b>Groupes max :</b> {project.maxGroups}</p>
+                    <p>
+                        <b>Étudiants :</b> {project.minStudents} - {project.maxStudents}
+                    </p>
+                    <p>
+                        <b>Groupes max :</b> {project.maxGroups}
+                    </p>
                 </div>
             ) : (
-                <p style={{ color: "gray" }}>Aucun projet n’est associé à cette organisation.</p>
+                <p style={{ color: "gray" }}>
+                    Aucun projet n’est associé à cette organisation.
+                </p>
             )}
 
             <h2>📂 Repositories</h2>
@@ -111,6 +119,28 @@ const OrgReposPage = () => {
                                 <h3>{repo.name}</h3>
                             </a>
                             <p>{repo.description || "Pas de description"}</p>
+
+                            {/* 👥 Membres */}
+                            {repo.members && repo.members.length > 0 && (
+                                <div className={styles.membersSection}>
+                                    <span className={styles.membersLabel}>👥 Membres :</span>
+                                    <div className={styles.membersList}>
+                                        {repo.members.map((m) => (
+                                            <a
+                                                key={m.login}
+                                                href={m.html_url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className={styles.member}
+                                                title={m.login}
+                                            >
+                                                <img src={m.avatar_url} alt={m.login} />
+                                                <span>{m.login}</span>
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
