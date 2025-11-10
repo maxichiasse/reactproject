@@ -27,6 +27,7 @@ const CreateGroupPage = () => {
     const [project, setProject] = useState<Project | null>(null);
     const [students, setStudents] = useState<Array<Student | null>>([]);
     const [loading, setLoading] = useState(true);
+    const [validLink, setValidLink] = useState<boolean | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Student[]>([]);
     const [activeInput, setActiveInput] = useState<number | null>(null);
@@ -37,21 +38,25 @@ const CreateGroupPage = () => {
     const debouncedSearch = useDebounce(searchQuery, 800);
     const code = searchParams.get("code");
 
-    // 🧩 Charger le projet
+    // 🧩 Vérifie la validité du lien + charge le projet
     useEffect(() => {
         projectsAPI
             .getBySecret(projectId!, key!)
             .then((res) => {
                 setProject(res.data);
                 setStudents([]);
+                setValidLink(true);
             })
-            .catch(() => showToast("❌ Lien invalide ou expiré.", "error"))
+            .catch(() => {
+                showToast("❌ Lien invalide ou expiré.", "error");
+                setValidLink(false);
+            })
             .finally(() => setLoading(false));
     }, [projectId, key]);
 
-    // 👤 Charger l’étudiant connecté
+    // 👤 Charger l’étudiant connecté (après OAuth GitHub)
     useEffect(() => {
-        if (code && projectId && !alreadyFetched.current) {
+        if (code && projectId && validLink && !alreadyFetched.current) {
             alreadyFetched.current = true;
             projectsAPI
                 .getStudentByCode(projectId, code)
@@ -59,23 +64,25 @@ const CreateGroupPage = () => {
                     const user = res.data;
                     setStudents([user, null]);
                 })
-                .catch(() => showToast("⚠️ Erreur lors de la récupération du profil GitHub.", "error"));
+                .catch(() =>
+                    showToast("⚠️ Erreur lors de la récupération du profil GitHub.", "error")
+                );
         }
-    }, [code, projectId]);
+    }, [code, projectId, validLink]);
 
-    // 🔍 Recherche utilisateur
+    // 🔍 Recherche d’un utilisateur GitHub
     useEffect(() => {
         const query = debouncedSearch.trim().replace("@", "");
-        if (query.length < 2) {
+        if (query.length < 2 || !projectId) {
             setSearchResults([]);
             return;
         }
 
         projectsAPI
-            .searchGithubUsers(projectId!, query)
+            .searchGithubUsers(projectId, query)
             .then((res) => setSearchResults(res.data))
             .catch(() => setSearchResults([]));
-    }, [debouncedSearch]);
+    }, [debouncedSearch, projectId]);
 
     // ✅ Sélection d’un utilisateur
     const handleSelectUser = (index: number, user: Student) => {
@@ -83,7 +90,7 @@ const CreateGroupPage = () => {
             const updated = [...prev];
             updated[index] = user;
 
-            // Ajoute un champ vide si dernier rempli
+            // Ajoute un champ vide si le dernier est rempli
             if (
                 updated[updated.length - 1] !== null &&
                 project &&
@@ -103,8 +110,11 @@ const CreateGroupPage = () => {
     const handleRemoveUser = (index: number) => {
         setStudents((prev) => {
             const updated = prev.filter((_, i) => i !== index);
-            // Assure un champ vide à la fin
-            if (updated[updated.length - 1] !== null && project && updated.length < project.maxStudents) {
+            if (
+                updated[updated.length - 1] !== null &&
+                project &&
+                updated.length < project.maxStudents
+            ) {
                 updated.push(null);
             }
             return updated;
@@ -128,7 +138,10 @@ const CreateGroupPage = () => {
         if (!project) return;
         const selected = students.filter((s) => s !== null) as Student[];
         if (selected.length < project.minStudents) {
-            showToast(`⚠️ Il faut au moins ${project.minStudents} étudiants pour créer un groupe.`, "info");
+            showToast(
+                `⚠️ Il faut au moins ${project.minStudents} étudiants pour créer un groupe.`,
+                "info"
+            );
             return;
         }
 
@@ -142,13 +155,34 @@ const CreateGroupPage = () => {
             const repoUrl = res.data.repoUrl || res.data.html_url || null;
             if (repoUrl) window.location.href = repoUrl;
         } catch (err: any) {
-            showToast(`❌ Erreur lors de la création du groupe : ${err.response?.data?.error || err.message}`, "error");
+            showToast(
+                `❌ Erreur lors de la création du groupe : ${
+                    err.response?.data?.error || err.message
+                }`,
+                "error"
+            );
         } finally {
             setCreating(false);
         }
     };
 
+    // 🌀 Affichage en fonction de l’état
     if (loading) return <p className={styles.loading}>Chargement...</p>;
+
+    if (validLink === false) {
+        return (
+            <div className={styles.pageWrapper}>
+                <div className={styles.container}>
+                    <h1>❌ Lien invalide ou expiré</h1>
+                    <p className={styles.errorText}>
+                        Ce lien n’est plus valide ou a été mal copié.
+                        <br />
+                        Veuillez vérifier le lien fourni par votre professeur.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.pageWrapper}>
@@ -157,13 +191,21 @@ const CreateGroupPage = () => {
 
                 {project && (
                     <>
-                        <p>Projet : <b>{project.name}</b></p>
-                        <p>Étudiants : {project.minStudents} à {project.maxStudents}</p>
+                        <p>
+                            Projet : <b>{project.name}</b>
+                        </p>
+                        <p>
+                            Étudiants : {project.minStudents} à {project.maxStudents}
+                        </p>
                     </>
                 )}
 
                 {!students[0] ? (
-                    <button className={styles.authButton} onClick={handleAuthorize}>
+                    <button
+                        className={styles.authButton}
+                        onClick={handleAuthorize}
+                        disabled={!validLink}
+                    >
                         Autoriser GitHub
                     </button>
                 ) : (
@@ -174,7 +216,7 @@ const CreateGroupPage = () => {
                                     <div className={styles.userBox}>
                                         <img src={s.avatar_url} alt="avatar" />
                                         <span>@{s.login}</span>
-                                        {i > 0 && ( // pas de suppression du 1er user (connecté)
+                                        {i > 0 && (
                                             <button
                                                 className={styles.removeBtn}
                                                 onClick={() => handleRemoveUser(i)}
@@ -189,21 +231,36 @@ const CreateGroupPage = () => {
                                         <input
                                             type="text"
                                             placeholder={`@Étudiant ${i + 1}`}
-                                            value={activeInput === i ? searchQuery : s?.login || ""}
+                                            value={
+                                                activeInput === i
+                                                    ? searchQuery
+                                                    : s?.login || ""
+                                            }
                                             onFocus={() => setActiveInput(i)}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onChange={(e) =>
+                                                setSearchQuery(e.target.value)
+                                            }
                                             className={styles.input}
                                         />
-                                        {activeInput === i && searchResults.length > 0 && (
-                                            <ul className={styles.dropdown}>
-                                                {searchResults.map((user) => (
-                                                    <li key={user.id} onClick={() => handleSelectUser(i, user)}>
-                                                        <img src={user.avatar_url} alt="avatar" />
-                                                        <span>@{user.login}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
+                                        {activeInput === i &&
+                                            searchResults.length > 0 && (
+                                                <ul className={styles.dropdown}>
+                                                    {searchResults.map((user) => (
+                                                        <li
+                                                            key={user.id}
+                                                            onClick={() =>
+                                                                handleSelectUser(i, user)
+                                                            }
+                                                        >
+                                                            <img
+                                                                src={user.avatar_url}
+                                                                alt="avatar"
+                                                            />
+                                                            <span>@{user.login}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
                                     </div>
                                 )}
                             </div>

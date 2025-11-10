@@ -136,13 +136,20 @@ $page-block-pad: clamp(40px, 6vh, 72px);
         color: $color-accent;
       }
 
+      /* ✅ Description multi-ligne + coupe propre si trop longue */
       p {
         font-size: 0.85rem;
         color: $text-light;
         margin: 0;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        line-height: 1.4;
+        width: 100%;
       }
     }
   }
+
 
   /* === MEMBRES (compact + label) === */
   .membersSection {

@@ -20,8 +20,9 @@ lerna-debug.log*
 # ==============================
 # Fichiers d'environnement (ne jamais commit)
 .env
-.env.*         # ex: .env.local, .env.development
+.env.*
 *.local
+*.production
 
 # ==============================
 # 🏗️ FICHIERS DE BUILD / SORTIES
