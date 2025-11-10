@@ -14,14 +14,15 @@ import { AppDataSource } from "./data-source";
 import { app } from "./app";
 import express from "express";
 import path from "path";
+import {bootstrapProfessorToken} from "./utils/bootstrapProf";
 
 const PORT = process.env.PORT || 4000;
 const __rootDir = path.join(__dirname, "../..");
 
 AppDataSource.initialize()
-    .then(() => {
+    .then(async () => {
         console.log("📦 Base de données initialisée !");
-
+        await bootstrapProfessorToken(AppDataSource);
         app.use(express.static(path.join(__rootDir, "frontend", "dist")));
 
         app.use((req, res) => {
