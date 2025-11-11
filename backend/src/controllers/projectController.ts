@@ -7,6 +7,8 @@ import { AppDataSource } from "../data-source";
 import { Project } from "../entity/Project";
 import { Organization } from "../entity/Organization";
 import {ENV} from "../config/env";
+import { Group } from "../entity/Group";
+
 
 /**
  * ➕ Crée un projet pour une organisation donnée
@@ -85,5 +87,42 @@ export const verifyProjectLink = async (req: Request, res: Response) => {
     } catch (err: any) {
         console.error("Erreur vérification lien projet:", err);
         res.status(500).json({ error: err.message });
+    }
+};
+
+export const deleteProjectController = async (req: AuthRequest, res: Response) => {
+    try {
+        const { orgName } = req.params;
+        if (!req.user) return res.status(401).json({ error: "Non authentifié." });
+
+        const projectRepo = AppDataSource.getRepository(Project);
+
+        // Projet du prof pour cette org
+        const project = await projectRepo.findOne({
+            where: { organization: { name: orgName }, owner: { id: req.user.id } },
+            relations: ["organization", "owner"],
+        });
+
+        if (!project) {
+            return res.status(404).json({ error: "Projet introuvable pour cette organisation." });
+        }
+
+        // Compter les groupes liés
+        const groupRepo = AppDataSource.getRepository(Group);
+        const groupCount = await groupRepo.count({ where: { project: { id: project.id } } });
+
+        if (groupCount > 0) {
+            return res
+                .status(409)
+                .json({ error: `Ce projet contient encore ${groupCount} groupe(s). Supprimez-les d'abord.` });
+        }
+
+        await projectRepo.remove(project);
+        console.log(`🗑️ Projet supprimé : ${orgName}`);
+
+        return res.json({ success: true, message: "Projet supprimé avec succès." });
+    } catch (err: any) {
+        console.error("❌ Erreur suppression projet :", err);
+        return res.status(500).json({ error: err.message || "Erreur serveur" });
     }
 };

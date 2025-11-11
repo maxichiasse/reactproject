@@ -19,6 +19,7 @@ const OrgReposPage = () => {
     const [copied, setCopied] = useState(false);
 
     // 🔹 Modale de confirmation
+    // selectedRepo === "__PROJECT__" => suppression du projet
     const [showConfirm, setShowConfirm] = useState(false);
     const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
 
@@ -61,13 +62,28 @@ const OrgReposPage = () => {
             });
     };
 
-    // 🗑 Ouvre la modale
+    // 🗑 Ouvre la modale (repo)
     const askDeleteRepo = (repoName: string) => {
         setSelectedRepo(repoName);
         setShowConfirm(true);
     };
 
-    // 🧠 Confirmation réelle (appel backend)
+    // 🗑 Ouvre la modale (projet)
+    const askDeleteProject = () => {
+        setSelectedRepo("__PROJECT__");
+        setShowConfirm(true);
+    };
+
+    // utilitaire parse safe
+    const safeParse = async (res: Response) => {
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+            try { return await res.json(); } catch { return null; }
+        }
+        try { return { message: await res.text() }; } catch { return null; }
+    };
+
+    // 🧠 Confirmation réelle
     const confirmDelete = async () => {
         if (!selectedRepo || !orgName) {
             setShowConfirm(false);
@@ -75,42 +91,45 @@ const OrgReposPage = () => {
         }
 
         try {
-            const res = await fetch(`${apiBase}/api/groups/${encodeURIComponent(selectedRepo)}`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ orgName }),
-                credentials: "include",
-            });
+            let res: Response;
 
-            let data: any = null;
-            const ct = res.headers.get("content-type") || "";
-            if (ct.includes("application/json")) {
-                try {
-                    data = await res.json();
-                } catch {
-                    /* ignore */
-                }
+            if (selectedRepo === "__PROJECT__") {
+                // ❌ SUPPRESSION PROJET
+                res = await fetch(`${apiBase}/api/projects/${encodeURIComponent(orgName)}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                });
             } else {
-                try {
-                    data = { message: await res.text() };
-                } catch {
-                    /* ignore */
-                }
+                // ❌ SUPPRESSION REPO
+                res = await fetch(`${apiBase}/api/groups/${encodeURIComponent(selectedRepo)}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ orgName }),
+                    credentials: "include",
+                });
             }
 
-            if (res.ok) {
-                // ✅ Message précis du backend
-                showToast(data?.message || `🗑 ${selectedRepo} supprimé`, "success");
+            const data: any = await safeParse(res);
 
-                // 🔄 Met à jour le contexte global et la liste locale
+            if (res.ok) {
+                showToast(data?.message || "Supprimé avec succès", "success");
+                // 🔄 Rafraîchir orgs + détails pour garder l’UI cohérente
                 await refreshOrgs();
                 await fetchData();
+
+                if (selectedRepo === "__PROJECT__") {
+                    // retour à la liste si le projet n’existe plus
+                    navigate("/orgs");
+                }
+            } else if (res.status === 409) {
+                // Projet contenant encore des groupes
+                showToast(data?.error ?? "Ce projet contient encore des groupes.", "warning");
             } else {
                 showToast(`❌ ${data?.error ?? "Erreur lors de la suppression"}`, "error");
             }
         } catch (err) {
-            console.error("Erreur suppression repo:", err);
-            showToast("❌ Impossible de supprimer le repository", "error");
+            console.error("Erreur suppression:", err);
+            showToast("❌ Impossible de supprimer", "error");
         } finally {
             setShowConfirm(false);
             setSelectedRepo(null);
@@ -136,25 +155,16 @@ const OrgReposPage = () => {
             {project ? (
                 <div className={styles.projectCard}>
                     <h2>📑 Projet</h2>
-                    <p>
-                        <b>Clé secrète :</b> {project.secretKey}
-                    </p>
+                    <p><b>Clé secrète :</b> {project.secretKey}</p>
 
-                    {/* ✅ Lien d’inscription + icône de copie */}
                     {(() => {
                         const joinUrl =
                             project.joinUrl ||
                             `${ENV.FRONT_URL}/CreateGroup/${project.id}/${project.secretKey}`;
-
                         return (
                             <p className={styles.copyLine}>
                                 <b>Lien :</b>{" "}
-                                <a
-                                    href={joinUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className={styles.linkText}
-                                >
+                                <a href={joinUrl} target="_blank" rel="noreferrer" className={styles.linkText}>
                                     {joinUrl}
                                 </a>
                                 <Clipboard
@@ -167,12 +177,13 @@ const OrgReposPage = () => {
                         );
                     })()}
 
-                    <p>
-                        <b>Étudiants :</b> {project.minStudents} - {project.maxStudents}
-                    </p>
-                    <p>
-                        <b>Groupes max :</b> {project.maxGroups}
-                    </p>
+                    <p><b>Étudiants :</b> {project.minStudents} - {project.maxStudents}</p>
+                    <p><b>Groupes max :</b> {project.maxGroups}</p>
+
+                    {/* 🗑 Supprimer le projet */}
+                    <button className={styles.deleteProjectButton} onClick={askDeleteProject}>
+                        Supprimer le projet
+                    </button>
                 </div>
             ) : (
                 <p style={{ color: "gray" }}>Aucun projet n’est associé à cette organisation.</p>
@@ -187,16 +198,10 @@ const OrgReposPage = () => {
                     {repos.map((repo) => (
                         <div key={repo.id} className={styles.repoBox}>
                             <div className={styles.repoHeader}>
-                                <a
-                                    href={repo.html_url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className={styles.repoLink}
-                                >
+                                <a href={repo.html_url} target="_blank" rel="noreferrer" className={styles.repoLink}>
                                     <h3>{repo.name}</h3>
                                 </a>
 
-                                {/* 🗑 Bouton Supprimer */}
                                 <button
                                     className={styles.deleteButton}
                                     onClick={() => askDeleteRepo(repo.name)}
@@ -208,7 +213,6 @@ const OrgReposPage = () => {
 
                             <p>{repo.description || "Pas de description"}</p>
 
-                            {/* 👥 Membres */}
                             {repo.members && repo.members.length > 0 && (
                                 <div className={styles.membersSection}>
                                     <span className={styles.membersLabel}>👥 Membres :</span>
@@ -234,11 +238,15 @@ const OrgReposPage = () => {
                 </div>
             )}
 
-            {/* 🌟 Modale de confirmation */}
+            {/* 🌟 Modale – message/titre dynamiques */}
             <ConfirmModal
                 open={showConfirm}
-                title="Supprimer le repository"
-                message={`Voulez-vous vraiment supprimer « ${selectedRepo ?? ""} » ? Cette action est irréversible.`}
+                title={selectedRepo === "__PROJECT__" ? "Supprimer le projet" : "Supprimer le repository"}
+                message={
+                    selectedRepo === "__PROJECT__"
+                        ? "Voulez-vous vraiment supprimer ce projet ? Cette action est irréversible."
+                        : `Voulez-vous vraiment supprimer « ${selectedRepo ?? ""} » ? Cette action est irréversible.`
+                }
                 confirmText="Supprimer"
                 cancelText="Annuler"
                 onConfirm={confirmDelete}
