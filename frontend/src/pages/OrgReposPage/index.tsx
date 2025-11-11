@@ -5,8 +5,10 @@ import { orgsAPI } from "@api/orgs";
 import type { Project } from "types/Project";
 import type { Repository } from "types/Repository";
 import { ENV } from "@config/env";
-import { Clipboard } from "lucide-react";
+import { Clipboard, Trash2 } from "lucide-react";
 import { useToast } from "@contexts/ToastContext";
+import ConfirmModal from "@components/ConfirmModal";
+import { useOrgs } from "@contexts/OrgsContext";
 import styles from "./OrgReposPage.module.scss";
 
 const OrgReposPage = () => {
@@ -15,25 +17,35 @@ const OrgReposPage = () => {
     const [repos, setRepos] = useState<Repository[]>([]);
     const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(false);
+
+    // 🔹 Modale de confirmation
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+
     const { showToast } = useToast();
+    const { refreshOrgs } = useOrgs();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const { data } = await orgsAPI.getDetails(orgName!);
-                setProject(data.project);
-                setRepos(data.repositories);
-            } catch (err) {
-                console.error("❌ Erreur lors du chargement des détails:", err);
-                setProject(null);
-                setRepos([]);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // ✅ base URL backend
+    const apiBase = (ENV.API_URL ?? "").replace(/\/$/, "");
 
+    const fetchData = async () => {
+        try {
+            const { data } = await orgsAPI.getDetails(orgName!);
+            setProject(data.project);
+            setRepos(data.repositories);
+        } catch (err) {
+            console.error("❌ Erreur lors du chargement des détails:", err);
+            setProject(null);
+            setRepos([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgName]);
 
     const handleCopy = (text: string) => {
@@ -47,6 +59,67 @@ const OrgReposPage = () => {
             .catch(() => {
                 showToast("❌ Erreur lors de la copie du lien", "error");
             });
+    };
+
+    // 🗑 Ouvre la modale
+    const askDeleteRepo = (repoName: string) => {
+        setSelectedRepo(repoName);
+        setShowConfirm(true);
+    };
+
+    // 🧠 Confirmation réelle (appel backend)
+    const confirmDelete = async () => {
+        if (!selectedRepo || !orgName) {
+            setShowConfirm(false);
+            return;
+        }
+
+        try {
+            const res = await fetch(`${apiBase}/api/groups/${encodeURIComponent(selectedRepo)}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orgName }),
+                credentials: "include",
+            });
+
+            let data: any = null;
+            const ct = res.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+                try {
+                    data = await res.json();
+                } catch {
+                    /* ignore */
+                }
+            } else {
+                try {
+                    data = { message: await res.text() };
+                } catch {
+                    /* ignore */
+                }
+            }
+
+            if (res.ok) {
+                // ✅ Message précis du backend
+                showToast(data?.message || `🗑 ${selectedRepo} supprimé`, "success");
+
+                // 🔄 Met à jour le contexte global et la liste locale
+                await refreshOrgs();
+                await fetchData();
+            } else {
+                showToast(`❌ ${data?.error ?? "Erreur lors de la suppression"}`, "error");
+            }
+        } catch (err) {
+            console.error("Erreur suppression repo:", err);
+            showToast("❌ Impossible de supprimer le repository", "error");
+        } finally {
+            setShowConfirm(false);
+            setSelectedRepo(null);
+        }
+    };
+
+    const cancelDelete = () => {
+        setShowConfirm(false);
+        setSelectedRepo(null);
     };
 
     if (loading) return <p>Chargement...</p>;
@@ -67,7 +140,7 @@ const OrgReposPage = () => {
                         <b>Clé secrète :</b> {project.secretKey}
                     </p>
 
-                    {/* ✅ Lien d’inscription affiché proprement avec icône de copie */}
+                    {/* ✅ Lien d’inscription + icône de copie */}
                     {(() => {
                         const joinUrl =
                             project.joinUrl ||
@@ -102,9 +175,7 @@ const OrgReposPage = () => {
                     </p>
                 </div>
             ) : (
-                <p style={{ color: "gray" }}>
-                    Aucun projet n’est associé à cette organisation.
-                </p>
+                <p style={{ color: "gray" }}>Aucun projet n’est associé à cette organisation.</p>
             )}
 
             <h2>📂 Repositories</h2>
@@ -115,9 +186,26 @@ const OrgReposPage = () => {
                 <div className={styles.repoGrid}>
                     {repos.map((repo) => (
                         <div key={repo.id} className={styles.repoBox}>
-                            <a href={repo.html_url} target="_blank" rel="noreferrer">
-                                <h3>{repo.name}</h3>
-                            </a>
+                            <div className={styles.repoHeader}>
+                                <a
+                                    href={repo.html_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={styles.repoLink}
+                                >
+                                    <h3>{repo.name}</h3>
+                                </a>
+
+                                {/* 🗑 Bouton Supprimer */}
+                                <button
+                                    className={styles.deleteButton}
+                                    onClick={() => askDeleteRepo(repo.name)}
+                                    title="Supprimer le repository"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+
                             <p>{repo.description || "Pas de description"}</p>
 
                             {/* 👥 Membres */}
@@ -145,6 +233,17 @@ const OrgReposPage = () => {
                     ))}
                 </div>
             )}
+
+            {/* 🌟 Modale de confirmation */}
+            <ConfirmModal
+                open={showConfirm}
+                title="Supprimer le repository"
+                message={`Voulez-vous vraiment supprimer « ${selectedRepo ?? ""} » ? Cette action est irréversible.`}
+                confirmText="Supprimer"
+                cancelText="Annuler"
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+            />
         </div>
     );
 };

@@ -1,0 +1,105 @@
+/* frontend/src/components/ConfirmModal.module.scss */
+@use "../styles/variables" as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+
+  /* Empêche tout décalage lors du scroll lock */
+  overflow: hidden;
+  will-change: opacity;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  /* Fixe la modale exactement au centre même quand le viewport change */
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+
+  /* Empêche les "reflows" GPU et les micro-décalages */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center center;
+  pointer-events: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 45px rgba(0, 0, 0, 0.25);
+  width: min(420px, 90%);
+  text-align: center;
+  color: #1e293b;
+  animation: fadeIn 0.25s ease forwards;
+
+  /* Empêche tout "saut" après animation */
+  position: fixed;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+
+  h3 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #475569;
+    margin-bottom: 1.5rem;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+
+    button {
+      padding: 0.6rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cancel {
+      background: #e5e7eb;
+      color: #1f2937;
+
+      &:hover {
+        background: #d1d5db;
+      }
+    }
+
+    .confirm {
+      background: #dc2626;
+      color: #fff;
+
+      &:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}

@@ -10,7 +10,10 @@
 "forceConsistentCasingInFileNames": true,
 "experimentalDecorators": true,
 "emitDecoratorMetadata": true,
-"useDefineForClassFields": false
+"useDefineForClassFields": false,
+
+  "types": ["node", "jest"],
+  "moduleResolution": "node"
 
 },
 "include": ["src/**/*"]

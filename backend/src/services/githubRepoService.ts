@@ -4,7 +4,6 @@ import { AppDataSource } from "../data-source";
 import { Project } from "../entity/Project";
 import { Prof } from "../entity/Prof";
 import { decrypt } from "../utils/crypto";
-import { githubFetch } from "../utils/github";
 
 /**
  * 🔹 Récupère et déchiffre le token GitHub du prof propriétaire d’un projet
@@ -32,8 +31,7 @@ export async function createGithubRepoForGroup(projectId: number, groupName: str
     });
 
     if (!project) throw new Error("Projet introuvable");
-    if (!project.owner || !project.organization)
-        throw new Error("Owner ou organisation manquante");
+    if (!project.owner || !project.organization) throw new Error("Owner ou organisation manquante");
 
     const token = await getDecryptedToken(project.owner.id);
     const orgName = project.organization.name;
@@ -58,9 +56,13 @@ export async function createGithubRepoForGroup(projectId: number, groupName: str
         );
 
         console.log(`✅ Repo créé : ${response.data.html_url}`);
-        return response.data; // contient html_url, name, id, etc.
+        return response.data;
     } catch (err: any) {
-        console.error("❌ Erreur GitHub (création repo):", err.response?.status, err.response?.data || err.message);
+        console.error(
+            "❌ Erreur GitHub (création repo):",
+            err.response?.status,
+            err.response?.data || err.message
+        );
         throw err;
     }
 }
@@ -75,11 +77,9 @@ export async function addCollaboratorToRepo(
     token: string
 ) {
     try {
-        const response = await axios.put(
+        await axios.put(
             `https://api.github.com/repos/${orgName}/${repoName}/collaborators/${githubLogin}`,
-            {
-                permission: "push", // droits d'écriture (commit, push, etc.)
-            },
+            { permission: "push" },
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -89,7 +89,6 @@ export async function addCollaboratorToRepo(
         );
 
         console.log(`👥 Invitation envoyée à ${githubLogin} pour ${repoName}`);
-        return response.data;
     } catch (err: any) {
         if (err.response?.status === 404)
             console.error(`⚠️ Repo ou utilisateur introuvable pour ${githubLogin}`);
@@ -101,7 +100,11 @@ export async function addCollaboratorToRepo(
 /**
  * 🔹 Crée un repo et ajoute automatiquement les étudiants collaborateurs
  */
-export async function createRepoAndInviteStudents(projectId: number, groupName: string, students: { login: string }[]) {
+export async function createRepoAndInviteStudents(
+    projectId: number,
+    groupName: string,
+    students: { login: string }[]
+) {
     const projectRepo = AppDataSource.getRepository(Project);
     const project = await projectRepo.findOne({
         where: { id: projectId },
@@ -109,19 +112,50 @@ export async function createRepoAndInviteStudents(projectId: number, groupName: 
     });
 
     if (!project) throw new Error("Projet introuvable");
-    if (!project.owner || !project.organization)
-        throw new Error("Owner ou organisation manquante");
+    if (!project.owner || !project.organization) throw new Error("Owner ou organisation manquante");
 
     const token = await getDecryptedToken(project.owner.id);
     const orgName = project.organization.name;
 
-    // Étape 1 → créer le repo
     const repo = await createGithubRepoForGroup(projectId, groupName);
 
-    // Étape 2 → inviter les étudiants
     for (const student of students) {
         await addCollaboratorToRepo(orgName, repo.name, student.login, token);
     }
 
     return repo.html_url;
 }
+
+/**
+ * ❌ Supprime un repository GitHub dans une organisation
+ */
+export async function deleteGithubRepo(orgName: string, repoName: string, profId: number) {
+    const token = await getDecryptedToken(profId);
+
+    try {
+        const res = await axios.delete(`https://api.github.com/repos/${orgName}/${repoName}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/vnd.github+json",
+            },
+            validateStatus: () => true,
+        });
+
+        if (res.status === 204) {
+            console.log(`🗑️ Repo supprimé sur GitHub : ${orgName}/${repoName}`);
+            return true;
+        }
+
+        if (res.status === 404) {
+            console.warn(`⚠️ Repo ${orgName}/${repoName} introuvable (déjà supprimé).`);
+            return false;
+        }
+
+        console.error(`❌ Erreur GitHub (${res.status}):`, res.data);
+        return false;
+    } catch (err: any) {
+        console.error(`💥 Exception GitHub DELETE:`, err.response?.data || err.message);
+        return false;
+    }
+}
+

@@ -8,7 +8,10 @@
     "start:backend": "node dist/server.js",
     "add-prof": "ts-node -P tsconfig.json src/scripts/add-prof.ts",
     "typeorm:local": "dotenv -e .env.local -- ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "typeorm:prod": "dotenv -e .env.production -- ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
+    "typeorm:prod": "dotenv -e .env.production -- ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "axios": "^1.12.2",
@@ -34,6 +37,7 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.6.0",
@@ -48,9 +52,11 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
+    "jest": "^30.2.0",
     "postcss": "^8.5.6",
     "sass": "^1.93.2",
     "tailwindcss": "^4.1.14",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "~5.8.3",

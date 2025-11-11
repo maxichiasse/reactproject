@@ -27,10 +27,7 @@ $page-block-pad: clamp(40px, 6vh, 72px);
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
+  &::-webkit-scrollbar { width: 8px; }
   &::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.25);
     border-radius: 6px;
@@ -100,9 +97,7 @@ $page-block-pad: clamp(40px, 6vh, 72px);
           transform: scale(1.1);
         }
 
-        &.copied {
-          color: #28a745;
-        }
+        &.copied { color: #28a745; }
       }
     }
   }
@@ -149,7 +144,6 @@ $page-block-pad: clamp(40px, 6vh, 72px);
       }
     }
   }
-
 
   /* === MEMBRES (compact + label) === */
   .membersSection {
@@ -199,6 +193,41 @@ $page-block-pad: clamp(40px, 6vh, 72px);
       }
     }
   }
+
+  /* === En-tête repo + bouton supprimer === */
+  .repoHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+
+    .repoLink {
+      text-decoration: none;
+      color: inherit;
+
+      &:hover h3 { text-decoration: underline; }
+    }
+
+    .deleteButton {
+      background: rgba(255, 0, 0, 0.1);
+      color: #b91c1c;
+      border: none;
+      border-radius: 6px;
+      padding: 0.3rem 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+
+      &:hover {
+        background: rgba(255, 0, 0, 0.2);
+        color: #dc2626;
+        transform: scale(1.05);
+      }
+
+      svg { pointer-events: none; }
+    }
+  }
 }
 
 /* === RESPONSIVE === */
@@ -208,13 +237,8 @@ $page-block-pad: clamp(40px, 6vh, 72px);
     padding-block: clamp(24px, 5vh, 48px);
   }
 
-  .projectCard {
-    width: 90%;
-  }
-
-  .repoGrid {
-    width: 95%;
-  }
+  .projectCard { width: 90%; }
+  .repoGrid { width: 95%; }
 
   .membersList .member img {
     width: 22px;
