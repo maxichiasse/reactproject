@@ -4,6 +4,7 @@ import { handleGithubAuth } from "../services/authService";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { log, errorLog } from "../utils/logger";
 import { handleGithubError } from "../utils/errorHandler";
+import {AppError} from "../utils/appError";
 
 export const githubAuth = async (req: Request, res: Response) => {
     const { code } = req.body;
@@ -23,6 +24,9 @@ export const githubAuth = async (req: Request, res: Response) => {
         return res.json({ success: true, user });
     } catch (err: any) {
         errorLog("Erreur /auth/github:", err.message);
+        if (err instanceof AppError) {                // ⬅️ ajoute ceci
+            return res.status(err.status).json({ error: err.message });
+        }
         return handleGithubError(res, err);
     }
 };

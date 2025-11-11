@@ -1,4 +1,4 @@
-//backend/src/utils/errorHandler.ts
+//backend/src/unit/errorHandler.ts
 import type { Response } from "express";
 
 /**
@@ -6,7 +6,9 @@ import type { Response } from "express";
  */
 export function handleGithubError(res: Response, err: any) {
     console.error("❌ Erreur GitHub :", err.response?.status || "", err.response?.data || err.message);
-
+    if (err?.status) {
+        return res.status(err.status).json({ success: false, error: err.message });
+    }
     const status = err.response?.status || 500;
     let message = "Erreur inconnue avec l’API GitHub.";
 

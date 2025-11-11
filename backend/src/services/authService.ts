@@ -4,6 +4,7 @@ import { Prof } from "../entity/Prof";
 import { decrypt } from "../utils/crypto";
 import { ENV } from "../config/env";
 import * as jwt from "jsonwebtoken";
+import {AppError} from "../utils/appError";
 
 /**
  * 🔹 Authentifie un prof via GitHub OAuth
@@ -49,13 +50,13 @@ export async function handleGithubAuth(code: string) {
 
     if (!prof) {
         console.error(`⛔ Prof ${userData.login} non autorisé`);
-        throw new Error("Accès refusé : prof non autorisé");
+        throw new AppError(403, "Accès refusé : prof non autorisé");
     }
 
     // 4️⃣ Utilise le PAT déjà stocké (on ignore le token OAuth)
     if (!prof.encryptedToken) {
         console.error(`❌ Aucun PAT enregistré pour ${prof.login}`);
-        throw new Error("Aucun PAT trouvé pour ce professeur.");
+        throw new AppError(403, "Accès refusé : PAT manquant pour ce professeur.");
     }
 
     const githubToken = decrypt(prof.encryptedToken);
