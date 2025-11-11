@@ -8,6 +8,7 @@ import crypto from "crypto";
 export async function createProject(
     orgName: string,
     profId: number,
+    name: string,
     minStudents: number,
     maxStudents: number,
     maxGroups: number
@@ -26,6 +27,7 @@ export async function createProject(
     if (existing) {
         if (existing.groups.length === 0) {
             // 🛠️ Modifier le projet existant
+            existing.name = name;
             existing.minStudents = minStudents;
             existing.maxStudents = maxStudents;
             existing.maxGroups = maxGroups;
@@ -40,7 +42,7 @@ export async function createProject(
     const secretKey = crypto.randomBytes(16).toString("hex");
 
     const project = projectRepo.create({
-        name: org.name,
+        name,
         secretKey,
         minStudents,
         maxStudents,

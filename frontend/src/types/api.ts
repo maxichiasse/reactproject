@@ -1,5 +1,6 @@
 //frontend/src/types/api.ts
 export interface CreateProjectPayload {
+    name: string,
     minStudents: number;
     maxStudents: number;
     maxGroups: number;

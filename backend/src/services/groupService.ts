@@ -5,6 +5,7 @@ import { Student } from "../entity/Student";
 import { Group } from "../entity/Group";
 import { createRepoAndInviteStudents, deleteGithubRepo } from "./githubRepoService";
 import { ILike, Raw } from "typeorm";
+import {AppError} from "../utils/appError";
 
 /**
  * 🔹 Crée un groupe d’étudiants pour un projet donné
@@ -28,7 +29,10 @@ export async function createGroupForProject(
         const existing = await studentRepo.findOne({
             where: { project: { id: project.id }, githubId: String(s.id) },
         });
-        if (existing) throw new Error(`@${s.login} est déjà inscrit dans un autre groupe.`);
+
+        if (existing) {
+            throw new AppError(409, `@${s.login} est déjà inscrit dans un groupe de ce projet.`);
+        }
     }
 
     const count = await groupRepo.count({ where: { project: { id: project.id } } });

@@ -15,6 +15,7 @@ const ProjetPage = () => {
 
     const [form, setForm] = useState({
         id: null as number | null,
+        name: "",
         minStudents: 1,
         maxStudents: 5,
         maxGroups: 1,
@@ -24,7 +25,12 @@ const ProjetPage = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setForm({ ...form, [name]: Number(value) });
+        setForm({
+            ...form,
+            [name]: name === "minStudents" || name === "maxStudents" || name === "maxGroups"
+                ? Number(value)
+                : value, // <-- garde les strings (ex: name)
+        });
     };
 
     // 🧩 Vérifie si un projet existe déjà pour cette organisation
@@ -35,6 +41,7 @@ const ProjetPage = () => {
                 if (res.data) {
                     setForm({
                         id: res.data.id,
+                        name: res.data.name,
                         minStudents: res.data.minStudents,
                         maxStudents: res.data.maxStudents,
                         maxGroups: res.data.maxGroups,
@@ -55,6 +62,7 @@ const ProjetPage = () => {
         e.preventDefault();
         try {
             const res = await projectsAPI.create(orgName!, {
+                name: form.name,
                 minStudents: form.minStudents,
                 maxStudents: form.maxStudents,
                 maxGroups: form.maxGroups,
@@ -98,12 +106,14 @@ const ProjetPage = () => {
 
                 <form className={styles.form} onSubmit={handleSubmit}>
                     <label>
-                        Nom du projet (lié à l’organisation) :
+                        Nom du projet :
                         <input
                             type="text"
-                            value={orgName}
-                            disabled
-                            className={styles.readonlyInput}
+                            name="name"
+                            value={form.name}
+                            onChange={handleChange}
+                            placeholder="Nom du projet"
+                            required
                         />
                     </label>
 

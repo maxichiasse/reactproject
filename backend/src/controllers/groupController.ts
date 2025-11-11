@@ -4,6 +4,7 @@ import { handleGithubError } from "../utils/errorHandler";
 import { createGroupSchema } from "../utils/validate";
 import { createGroupForProject, deleteGroup } from "../services/groupService";
 import { AuthRequest } from "../middleware/authMiddleware";
+import {AppError} from "../utils/appError";
 
 /**
  * ➕ Crée un groupe d'étudiants et un repo GitHub pour un projet
@@ -24,6 +25,9 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
 
         return res.json(result);
     } catch (err: any) {
+        if (err instanceof AppError) {
+            return res.status(err.status).json({ success: false, error: err.message });
+        }
         return handleGithubError(res, err);
     }
 };

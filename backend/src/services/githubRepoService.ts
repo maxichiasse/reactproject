@@ -35,8 +35,7 @@ export async function createGithubRepoForGroup(projectId: number, groupName: str
 
     const token = await getDecryptedToken(project.owner.id);
     const orgName = project.organization.name;
-    const repoName = `${groupName}-${project.name}`.toLowerCase().replace(/\s+/g, "-");
-
+    const repoName = groupName.toLowerCase();
     console.log(`🚀 Création du repo GitHub : ${orgName}/${repoName}`);
 
     try {

@@ -24,6 +24,7 @@ export const createProjectController = async (req: AuthRequest, res: Response) =
         const project = await createProject(
             orgName,
             req.user!.id,
+            parsed.name,
             parsed.minStudents,
             parsed.maxStudents,
             parsed.maxGroups
