@@ -1,13 +1,15 @@
-//backend/src/utils/validate.ts
+//backend/src/unit/validate.ts
 import { z } from "zod";
 
 /**
  * 🔹 Schéma pour la création d’un projet
  */
 export const projectSchema = z.object({
+    name: z.string().min(1, "Le nom du projet est requis"),
     minStudents: z.coerce.number().min(1),
     maxStudents: z.coerce.number().min(1),
     maxGroups: z.coerce.number().min(1),
+
 });
 
 /**
