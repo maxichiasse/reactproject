@@ -21,18 +21,24 @@ export async function createGroupForProject(
 
     const project = await projectRepo.findOne({
         where: { id: projectId, secretKey },
-        relations: ["organization", "owner"],
+        relations: ["organization", "owner", "groups"],
     });
     if (!project) throw new Error("Clé secrète invalide.");
 
+    // ✅ Vérification du nombre maximum de groupes autorisés
+    const existingGroupCount = project.groups.length;
+    if (existingGroupCount >= project.maxGroups) {
+        throw new Error(
+            `Nombre maximal de groupes atteint (${project.maxGroups}).`
+        );
+    }
+
+    // ✅ Vérifie que les étudiants ne sont pas déjà dans un groupe
     for (const s of students) {
         const existing = await studentRepo.findOne({
             where: { project: { id: project.id }, githubId: String(s.id) },
         });
-
-        if (existing) {
-            throw new AppError(409, `@${s.login} est déjà inscrit dans un groupe de ce projet.`);
-        }
+        if (existing) throw new Error(`@${s.login} est déjà inscrit dans un autre groupe.`);
     }
 
     const count = await groupRepo.count({ where: { project: { id: project.id } } });
